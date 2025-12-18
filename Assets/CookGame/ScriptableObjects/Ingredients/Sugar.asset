@@ -1,0 +1,23 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 320000a65ecd3b94f884b94b8138655b, type: 3}
+  m_Name: Sugar
+  m_EditorClassIdentifier: 
+  ingredientName: Sugar
+  rarity: 0
+  tasteMin: 8
+  tasteMax: 15
+  stabilityMin: 3
+  stabilityMax: 7
+  magicMin: 2
+  magicMax: 4
+  icon: {fileID: 21300000, guid: 44c7c67157a3de441b5f252419ed8fad, type: 3}
