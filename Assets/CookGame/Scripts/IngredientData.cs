@@ -20,6 +20,7 @@ public class IngredientData : ScriptableObject
     
     [Header("Visual")]
     public Sprite icon;
+    public Color rarityColor = Color.white;
     
     public IngredientInstance GenerateInstance()
     {
@@ -36,6 +37,11 @@ public class IngredientData : ScriptableObject
         Debug.Log($"[IngredientData]   Magic: {instance.magicEffect:F1}");
         
         return instance;
+    }
+    
+    void OnEnable()
+    {
+        Debug.Log($"[IngredientData] Ingredient loaded: {ingredientName} ({rarity})");
     }
 }
 

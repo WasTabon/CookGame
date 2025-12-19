@@ -1,30 +1,73 @@
 using UnityEngine;
+using UnityEngine.UI;
 using TMPro;
 using DG.Tweening;
 
 public class OrderPanel : MonoBehaviour
 {
-    [Header("UI Elements")]
-    public TextMeshProUGUI recipeNameText;
-    public TextMeshProUGUI tasteTargetText;
-    public TextMeshProUGUI stabilityTargetText;
-    public TextMeshProUGUI magicTargetText;
-    public TextMeshProUGUI turnsText;
+    [Header("Text References")]
+    public TMP_Text recipeNameText;
+    public TMP_Text tasteTargetText;
+    public TMP_Text stabilityTargetText;
+    public TMP_Text magicTargetText;
+    public TMP_Text turnsText;
+    public TMP_Text difficultyText;
+    
+    [Header("Button References")]
+    public Button acceptButton;
+    public Button declineButton;
+    
+    [Header("Visual")]
+    public Image recipeIcon;
+    
+    private RecipeData currentRecipe;
     
     void Awake()
     {
         Debug.Log("[OrderPanel] Awake() called");
-        
-        if (recipeNameText == null) Debug.LogError("[OrderPanel] ❌ recipeNameText is NULL!");
-        if (tasteTargetText == null) Debug.LogError("[OrderPanel] ❌ tasteTargetText is NULL!");
-        if (stabilityTargetText == null) Debug.LogError("[OrderPanel] ❌ stabilityTargetText is NULL!");
-        if (magicTargetText == null) Debug.LogError("[OrderPanel] ❌ magicTargetText is NULL!");
-        if (turnsText == null) Debug.LogError("[OrderPanel] ❌ turnsText is NULL!");
     }
     
-    public void DisplayRecipe(RecipeData recipe)
+    void Start()
     {
-        Debug.Log($"[OrderPanel] DisplayRecipe() called with: {recipe.recipeName}");
+        Debug.Log("[OrderPanel] Start() called");
+        ValidateReferences();
+        SetupButtons();
+    }
+    
+    void ValidateReferences()
+    {
+        if (recipeNameText == null)
+            Debug.LogWarning("[OrderPanel] ⚠️ Recipe Name Text is NULL");
+        if (acceptButton == null)
+            Debug.LogError("[OrderPanel] ❌ Accept Button is NULL!");
+    }
+    
+    void SetupButtons()
+    {
+        if (acceptButton != null)
+        {
+            acceptButton.onClick.AddListener(OnAcceptClicked);
+            Debug.Log("[OrderPanel] ✅ Accept button listener added");
+        }
+        
+        if (declineButton != null)
+        {
+            declineButton.onClick.AddListener(OnDeclineClicked);
+            Debug.Log("[OrderPanel] ✅ Decline button listener added");
+        }
+    }
+    
+    public void DisplayOrder(RecipeData recipe)
+    {
+        Debug.Log($"[OrderPanel] DisplayOrder: {recipe?.recipeName ?? "NULL"}");
+        
+        if (recipe == null)
+        {
+            Debug.LogError("[OrderPanel] ❌ Recipe is NULL!");
+            return;
+        }
+        
+        currentRecipe = recipe;
         
         if (recipeNameText != null)
         {
@@ -35,88 +78,124 @@ public class OrderPanel : MonoBehaviour
         if (tasteTargetText != null)
         {
             tasteTargetText.text = $"Taste: {recipe.tasteMin:F0} - {recipe.tasteMax:F0}";
-            Debug.Log($"[OrderPanel] Taste text set: {tasteTargetText.text}");
         }
         
         if (stabilityTargetText != null)
         {
             stabilityTargetText.text = $"Stability: {recipe.stabilityMin:F0} - {recipe.stabilityMax:F0}";
-            Debug.Log($"[OrderPanel] Stability text set: {stabilityTargetText.text}");
         }
         
         if (magicTargetText != null)
         {
             magicTargetText.text = $"Magic: {recipe.magicMin:F0} - {recipe.magicMax:F0}";
-            Debug.Log($"[OrderPanel] Magic text set: {magicTargetText.text}");
         }
         
         if (turnsText != null)
         {
             turnsText.text = $"Turns: {recipe.totalTurns}";
-            Debug.Log($"[OrderPanel] Turns text set: {turnsText.text}");
         }
         
-        Debug.Log("[OrderPanel] Starting text animations...");
+        if (difficultyText != null)
+        {
+            difficultyText.text = recipe.difficulty.ToString();
+            
+            Color diffColor = recipe.difficulty switch
+            {
+                RecipeData.Difficulty.Easy => Color.green,
+                RecipeData.Difficulty.Medium => Color.yellow,
+                RecipeData.Difficulty.Hard => new Color(1f, 0.5f, 0f),
+                RecipeData.Difficulty.Elite => Color.red,
+                _ => Color.white
+            };
+            difficultyText.color = diffColor;
+        }
+        
+        if (recipeIcon != null && recipe.icon != null)
+        {
+            recipeIcon.sprite = recipe.icon;
+        }
+        
+        Debug.Log("[OrderPanel] ✅ Order displayed");
+    }
+    
+    void OnAcceptClicked()
+    {
+        Debug.Log("[OrderPanel] Accept button clicked!");
+        
+        acceptButton.transform.DOPunchScale(Vector3.one * 0.1f, 0.2f, 5);
+        
+        GameManager.Instance.uiManager.HideOrderPanel();
+        GameManager.Instance.StartCooking();
+    }
+    
+    void OnDeclineClicked()
+    {
+        Debug.Log("[OrderPanel] Decline button clicked!");
+        
+        if (declineButton != null)
+        {
+            declineButton.transform.DOPunchScale(Vector3.one * 0.1f, 0.2f, 5);
+        }
+        
+        GameManager.Instance.uiManager.HideOrderPanel();
+    }
+    
+    public void Show()
+    {
+        Debug.Log("[OrderPanel] Show()");
+        
+        gameObject.SetActive(true);
+        
+        CanvasGroup canvasGroup = GetComponent<CanvasGroup>();
+        if (canvasGroup == null)
+        {
+            canvasGroup = gameObject.AddComponent<CanvasGroup>();
+        }
+        
+        canvasGroup.alpha = 0f;
+        transform.localScale = Vector3.one * 0.8f;
+        
+        Sequence showSequence = DOTween.Sequence();
+        showSequence.Append(canvasGroup.DOFade(1f, 0.3f));
+        showSequence.Join(transform.DOScale(1f, 0.4f).SetEase(Ease.OutBack));
+        
         AnimateTexts();
+        
+        Debug.Log("[OrderPanel] ✅ Show animation started");
     }
     
     void AnimateTexts()
     {
-        Debug.Log("[OrderPanel] AnimateTexts() called");
+        float delay = 0.1f;
         
-        if (recipeNameText != null) recipeNameText.alpha = 0;
-        if (tasteTargetText != null) tasteTargetText.alpha = 0;
-        if (stabilityTargetText != null) stabilityTargetText.alpha = 0;
-        if (magicTargetText != null) magicTargetText.alpha = 0;
-        if (turnsText != null) turnsText.alpha = 0;
+        TMP_Text[] texts = { recipeNameText, tasteTargetText, stabilityTargetText, magicTargetText, turnsText };
         
-        Sequence seq = DOTween.Sequence();
-        
-        if (recipeNameText != null)
-            seq.Append(recipeNameText.DOFade(1f, 0.3f).OnComplete(() => Debug.Log("[OrderPanel] Recipe name fade complete")));
-            
-        if (tasteTargetText != null)
-            seq.Append(tasteTargetText.DOFade(1f, 0.3f).OnComplete(() => Debug.Log("[OrderPanel] Taste fade complete")));
-            
-        if (stabilityTargetText != null)
-            seq.Append(stabilityTargetText.DOFade(1f, 0.3f).OnComplete(() => Debug.Log("[OrderPanel] Stability fade complete")));
-            
-        if (magicTargetText != null)
-            seq.Append(magicTargetText.DOFade(1f, 0.3f).OnComplete(() => Debug.Log("[OrderPanel] Magic fade complete")));
-            
-        if (turnsText != null)
-            seq.Append(turnsText.DOFade(1f, 0.3f).OnComplete(() => Debug.Log("[OrderPanel] Turns fade complete")));
-        
-        seq.OnComplete(() => Debug.Log("[OrderPanel] ✅ All text animations complete!"));
+        foreach (var text in texts)
+        {
+            if (text != null)
+            {
+                text.transform.localScale = Vector3.zero;
+                text.transform.DOScale(1f, 0.3f).SetDelay(delay).SetEase(Ease.OutBack);
+                delay += 0.1f;
+            }
+        }
     }
     
-    public void OnAcceptOrderButtonPressed()
+    public void Hide()
     {
-        Debug.Log("[OrderPanel] ========================================");
-        Debug.Log("[OrderPanel] ACCEPT ORDER button pressed!");
-        Debug.Log("[OrderPanel] ========================================");
+        Debug.Log("[OrderPanel] Hide()");
         
-        if (GameManager.Instance == null)
+        CanvasGroup canvasGroup = GetComponent<CanvasGroup>();
+        if (canvasGroup == null)
         {
-            Debug.LogError("[OrderPanel] ❌ GameManager.Instance is NULL!");
-            return;
+            canvasGroup = gameObject.AddComponent<CanvasGroup>();
         }
         
-        if (GameManager.Instance.uiManager == null)
-        {
-            Debug.LogError("[OrderPanel] ❌ UIManager is NULL!");
-            return;
-        }
+        Sequence hideSequence = DOTween.Sequence();
+        hideSequence.Append(canvasGroup.DOFade(0f, 0.2f));
+        hideSequence.Join(transform.DOScale(0.8f, 0.2f).SetEase(Ease.InBack));
+        hideSequence.OnComplete(() => gameObject.SetActive(false));
         
-        if (GameManager.Instance.orderManager == null || GameManager.Instance.orderManager.currentOrder == null)
-        {
-            Debug.LogError("[OrderPanel] ❌ No current order!");
-            return;
-        }
-        
-        Debug.Log("[OrderPanel] Starting cooking...");
-        GameManager.Instance.uiManager.ShowCookingPanel(GameManager.Instance.orderManager.currentOrder);
-        Debug.Log("[OrderPanel] ✅ ShowCookingPanel() called");
-        Debug.Log("[OrderPanel] ========================================");
+        Debug.Log("[OrderPanel] ✅ Hide animation started");
     }
 }

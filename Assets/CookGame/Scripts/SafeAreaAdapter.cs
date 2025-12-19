@@ -1,32 +1,35 @@
 using UnityEngine;
 
+[RequireComponent(typeof(RectTransform))]
 public class SafeAreaAdapter : MonoBehaviour
 {
-    RectTransform rectTransform;
+    private RectTransform rectTransform;
+    private Rect lastSafeArea;
     
     void Awake()
     {
         Debug.Log("[SafeAreaAdapter] Awake() called");
-        
         rectTransform = GetComponent<RectTransform>();
-        
-        if (rectTransform == null)
-        {
-            Debug.LogError("[SafeAreaAdapter] ❌ RectTransform component not found!");
-            return;
-        }
-        
-        Debug.Log("[SafeAreaAdapter] ✅ RectTransform found");
+    }
+    
+    void Start()
+    {
+        Debug.Log("[SafeAreaAdapter] Start() called");
         ApplySafeArea();
+    }
+    
+    void Update()
+    {
+        if (Screen.safeArea != lastSafeArea)
+        {
+            ApplySafeArea();
+        }
     }
     
     void ApplySafeArea()
     {
-        Debug.Log("[SafeAreaAdapter] ApplySafeArea() called");
-        
         Rect safeArea = Screen.safeArea;
-        Debug.Log($"[SafeAreaAdapter] Screen size: {Screen.width}x{Screen.height}");
-        Debug.Log($"[SafeAreaAdapter] Safe area: {safeArea}");
+        lastSafeArea = safeArea;
         
         Vector2 anchorMin = safeArea.position;
         Vector2 anchorMax = safeArea.position + safeArea.size;
@@ -39,6 +42,7 @@ public class SafeAreaAdapter : MonoBehaviour
         rectTransform.anchorMin = anchorMin;
         rectTransform.anchorMax = anchorMax;
         
-        Debug.Log($"[SafeAreaAdapter] ✅ Safe area applied - anchorMin: {anchorMin}, anchorMax: {anchorMax}");
+        Debug.Log($"[SafeAreaAdapter] Applied safe area: {safeArea}");
+        Debug.Log($"[SafeAreaAdapter] Anchors: min={anchorMin}, max={anchorMax}");
     }
 }

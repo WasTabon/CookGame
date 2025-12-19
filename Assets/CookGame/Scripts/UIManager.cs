@@ -3,110 +3,158 @@ using DG.Tweening;
 
 public class UIManager : MonoBehaviour
 {
-    [Header("Panels")]
-    public CanvasGroup menuPanel;
-    public CanvasGroup orderPanel;
-    public CanvasGroup cookingPanel;
-    public CanvasGroup resultPanel;
+    [Header("Panel References")]
+    public GameObject menuPanel;
+    public GameObject orderPanel;
+    public GameObject cookingPanel;
+    public GameObject resultPanel;
     
-    [Header("Script References")]
+    [Header("Panel Scripts")]
+    public MenuPanel menuPanelScript;
     public OrderPanel orderPanelScript;
     public CookingPanel cookingPanelScript;
     public ResultPanel resultPanelScript;
+    
+    [Header("Manager References")]
     public CookingManager cookingManager;
+    public FireBoostController fireBoostController;
     
     void Awake()
     {
         Debug.Log("[UIManager] Awake() called");
-        
-        if (menuPanel == null) Debug.LogError("[UIManager] ❌ menuPanel reference is NULL!");
-        if (orderPanel == null) Debug.LogError("[UIManager] ❌ orderPanel reference is NULL!");
-        if (cookingPanel == null) Debug.LogError("[UIManager] ❌ cookingPanel reference is NULL!");
-        if (resultPanel == null) Debug.LogError("[UIManager] ❌ resultPanel reference is NULL!");
-        if (orderPanelScript == null) Debug.LogError("[UIManager] ❌ orderPanelScript is NULL!");
-        if (cookingPanelScript == null) Debug.LogError("[UIManager] ❌ cookingPanelScript is NULL!");
-        if (resultPanelScript == null) Debug.LogError("[UIManager] ❌ resultPanelScript is NULL!");
-        if (cookingManager == null) Debug.LogError("[UIManager] ❌ cookingManager is NULL!");
     }
     
     void Start()
     {
-        Debug.Log("[UIManager] Start() - initializing panel states");
+        Debug.Log("[UIManager] Start() called");
+        ValidateReferences();
+        SetupPanels();
+        HideAllPanels();
+    }
+    
+    void ValidateReferences()
+    {
+        Debug.Log("[UIManager] Validating references...");
         
-        if (menuPanel != null)
-        {
-            menuPanel.alpha = 0;
-            menuPanel.gameObject.SetActive(false);
-        }
+        if (menuPanel == null)
+            Debug.LogError("[UIManager] ❌ Menu Panel is NULL!");
+        else
+            Debug.Log("[UIManager] ✅ Menu Panel found");
         
-        if (orderPanel != null)
-        {
-            orderPanel.alpha = 0;
-            orderPanel.gameObject.SetActive(false);
-        }
+        if (orderPanel == null)
+            Debug.LogError("[UIManager] ❌ Order Panel is NULL!");
+        else
+            Debug.Log("[UIManager] ✅ Order Panel found");
         
-        if (cookingPanel != null)
-        {
-            cookingPanel.alpha = 0;
-            cookingPanel.gameObject.SetActive(false);
-        }
+        if (cookingPanel == null)
+            Debug.LogError("[UIManager] ❌ Cooking Panel is NULL!");
+        else
+            Debug.Log("[UIManager] ✅ Cooking Panel found");
         
-        if (resultPanel != null)
+        if (resultPanel == null)
+            Debug.LogError("[UIManager] ❌ Result Panel is NULL!");
+        else
+            Debug.Log("[UIManager] ✅ Result Panel found");
+    }
+    
+    void SetupPanels()
+    {
+        if (cookingPanelScript != null)
         {
-            resultPanel.alpha = 0;
-            resultPanel.gameObject.SetActive(false);
+            cookingPanelScript.Setup(cookingManager, fireBoostController);
         }
+    }
+    
+    void HideAllPanels()
+    {
+        Debug.Log("[UIManager] Hiding all panels...");
+        
+        if (menuPanel != null) menuPanel.SetActive(false);
+        if (orderPanel != null) orderPanel.SetActive(false);
+        if (cookingPanel != null) cookingPanel.SetActive(false);
+        if (resultPanel != null) resultPanel.SetActive(false);
     }
     
     public void ShowMenuPanel()
     {
-        Debug.Log("[UIManager] ShowMenuPanel() called");
+        Debug.Log("[UIManager] ShowMenuPanel()");
         
         HideAllPanels();
         
         if (menuPanel != null)
         {
-            menuPanel.gameObject.SetActive(true);
-            menuPanel.DOFade(1f, 0.5f).SetEase(Ease.OutQuad);
-            menuPanel.transform.DOScale(Vector3.one, 0.5f).From(Vector3.one * 0.8f).SetEase(Ease.OutBack);
+            menuPanel.SetActive(true);
+            
+            if (menuPanelScript != null)
+            {
+                menuPanelScript.Show();
+            }
+            else
+            {
+                AnimatePanel(menuPanel);
+            }
         }
     }
     
     public void ShowOrderPanel(RecipeData recipe)
     {
-        Debug.Log($"[UIManager] ShowOrderPanel() with recipe: {recipe.recipeName}");
-        
-        HideAllPanels();
+        Debug.Log($"[UIManager] ShowOrderPanel() - {recipe?.recipeName ?? "NULL"}");
         
         if (orderPanel != null)
         {
-            orderPanel.gameObject.SetActive(true);
-            orderPanel.DOFade(1f, 0.5f).SetEase(Ease.OutQuad);
-            orderPanel.transform.DOScale(Vector3.one, 0.5f).From(Vector3.one * 0.8f).SetEase(Ease.OutBack);
+            orderPanel.SetActive(true);
             
             if (orderPanelScript != null)
-                orderPanelScript.DisplayRecipe(recipe);
+            {
+                orderPanelScript.DisplayOrder(recipe);
+                orderPanelScript.Show();
+            }
+            else
+            {
+                AnimatePanel(orderPanel);
+            }
         }
     }
     
-    public void ShowCookingPanel(RecipeData recipe)
+    public void HideOrderPanel()
     {
-        Debug.Log($"[UIManager] ShowCookingPanel() with recipe: {recipe.recipeName}");
+        Debug.Log("[UIManager] HideOrderPanel()");
+        
+        if (orderPanelScript != null)
+        {
+            orderPanelScript.Hide();
+        }
+        else if (orderPanel != null)
+        {
+            orderPanel.SetActive(false);
+        }
+    }
+    
+    public void ShowCookingPanel()
+    {
+        Debug.Log("[UIManager] ShowCookingPanel()");
         
         HideAllPanels();
         
         if (cookingPanel != null)
         {
-            cookingPanel.gameObject.SetActive(true);
-            cookingPanel.DOFade(1f, 0.5f).SetEase(Ease.OutQuad);
+            cookingPanel.SetActive(true);
             
             if (cookingPanelScript != null)
-                cookingPanelScript.Initialize(recipe, cookingManager);
-            
-            if (cookingManager != null)
             {
-                Debug.Log("[UIManager] Starting cooking...");
-                cookingManager.StartCooking(recipe);
+                cookingPanelScript.Show();
+                
+                if (GameManager.Instance.orderManager.currentOrder != null)
+                {
+                    cookingPanelScript.UpdateUI(
+                        GameManager.Instance.orderManager.currentOrder,
+                        GameManager.Instance.orderManager.currentOrder.totalTurns
+                    );
+                }
+            }
+            else
+            {
+                AnimatePanel(cookingPanel);
             }
         }
     }
@@ -115,25 +163,35 @@ public class UIManager : MonoBehaviour
     {
         Debug.Log($"[UIManager] ShowResultPanel() - Victory: {victory}");
         
-        HideAllPanels();
-        
         if (resultPanel != null)
         {
-            resultPanel.gameObject.SetActive(true);
-            resultPanel.DOFade(1f, 0.5f).SetEase(Ease.OutQuad);
+            resultPanel.SetActive(true);
             
             if (resultPanelScript != null)
-                resultPanelScript.ShowResult(victory);
+            {
+                resultPanelScript.DisplayResult(victory);
+                resultPanelScript.Show();
+            }
+            else
+            {
+                AnimatePanel(resultPanel);
+            }
         }
     }
     
-    void HideAllPanels()
+    void AnimatePanel(GameObject panel)
     {
-        Debug.Log("[UIManager] Hiding all panels");
+        CanvasGroup canvasGroup = panel.GetComponent<CanvasGroup>();
+        if (canvasGroup == null)
+        {
+            canvasGroup = panel.AddComponent<CanvasGroup>();
+        }
         
-        if (menuPanel != null) menuPanel.gameObject.SetActive(false);
-        if (orderPanel != null) orderPanel.gameObject.SetActive(false);
-        if (cookingPanel != null) cookingPanel.gameObject.SetActive(false);
-        if (resultPanel != null) resultPanel.gameObject.SetActive(false);
+        canvasGroup.alpha = 0f;
+        panel.transform.localScale = Vector3.one * 0.9f;
+        
+        Sequence sequence = DOTween.Sequence();
+        sequence.Append(canvasGroup.DOFade(1f, 0.3f));
+        sequence.Join(panel.transform.DOScale(1f, 0.3f).SetEase(Ease.OutBack));
     }
 }

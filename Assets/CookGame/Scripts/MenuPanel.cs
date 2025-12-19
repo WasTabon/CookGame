@@ -1,7 +1,14 @@
 using UnityEngine;
+using UnityEngine.UI;
+using TMPro;
+using DG.Tweening;
 
 public class MenuPanel : MonoBehaviour
 {
+    [Header("UI References")]
+    public Button getOrderButton;
+    public TMP_Text titleText;
+    
     void Awake()
     {
         Debug.Log("[MenuPanel] Awake() called");
@@ -10,53 +17,83 @@ public class MenuPanel : MonoBehaviour
     void Start()
     {
         Debug.Log("[MenuPanel] Start() called");
+        ValidateReferences();
+        SetupButtons();
     }
     
-    public void OnGetOrderButtonPressed()
+    void ValidateReferences()
     {
-        Debug.Log("[MenuPanel] ========================================");
-        Debug.Log("[MenuPanel] GET ORDER button pressed!");
-        Debug.Log("[MenuPanel] ========================================");
-        
-        if (GameManager.Instance == null)
+        if (getOrderButton == null)
+            Debug.LogError("[MenuPanel] ❌ Get Order Button is NULL!");
+        else
+            Debug.Log("[MenuPanel] ✅ Get Order Button found");
+    }
+    
+    void SetupButtons()
+    {
+        if (getOrderButton != null)
         {
-            Debug.LogError("[MenuPanel] ❌ GameManager.Instance is NULL!");
-            return;
+            getOrderButton.onClick.AddListener(OnGetOrderClicked);
+            Debug.Log("[MenuPanel] ✅ Get Order button listener added");
+        }
+    }
+    
+    void OnGetOrderClicked()
+    {
+        Debug.Log("[MenuPanel] Get Order button clicked!");
+        
+        getOrderButton.transform.DOPunchScale(Vector3.one * 0.1f, 0.2f, 5);
+        
+        RecipeData newOrder = GameManager.Instance.orderManager.GenerateRandomOrder();
+        
+        if (newOrder != null)
+        {
+            Debug.Log($"[MenuPanel] Showing order: {newOrder.recipeName}");
+            GameManager.Instance.uiManager.ShowOrderPanel(newOrder);
+        }
+        else
+        {
+            Debug.LogError("[MenuPanel] ❌ Failed to generate order!");
+        }
+    }
+    
+    public void Show()
+    {
+        Debug.Log("[MenuPanel] Show()");
+        
+        gameObject.SetActive(true);
+        
+        CanvasGroup canvasGroup = GetComponent<CanvasGroup>();
+        if (canvasGroup == null)
+        {
+            canvasGroup = gameObject.AddComponent<CanvasGroup>();
         }
         
-        Debug.Log("[MenuPanel] ✅ GameManager.Instance exists");
+        canvasGroup.alpha = 0f;
+        transform.localScale = Vector3.one * 0.9f;
         
-        if (GameManager.Instance.orderManager == null)
+        Sequence showSequence = DOTween.Sequence();
+        showSequence.Append(canvasGroup.DOFade(1f, 0.3f));
+        showSequence.Join(transform.DOScale(1f, 0.3f).SetEase(Ease.OutBack));
+        
+        Debug.Log("[MenuPanel] ✅ Show animation started");
+    }
+    
+    public void Hide()
+    {
+        Debug.Log("[MenuPanel] Hide()");
+        
+        CanvasGroup canvasGroup = GetComponent<CanvasGroup>();
+        if (canvasGroup == null)
         {
-            Debug.LogError("[MenuPanel] ❌ GameManager.Instance.orderManager is NULL!");
-            return;
+            canvasGroup = gameObject.AddComponent<CanvasGroup>();
         }
         
-        Debug.Log("[MenuPanel] ✅ OrderManager exists");
-        Debug.Log("[MenuPanel] Calling GenerateRandomOrder()...");
+        Sequence hideSequence = DOTween.Sequence();
+        hideSequence.Append(canvasGroup.DOFade(0f, 0.2f));
+        hideSequence.Join(transform.DOScale(0.9f, 0.2f).SetEase(Ease.InBack));
+        hideSequence.OnComplete(() => gameObject.SetActive(false));
         
-        RecipeData order = GameManager.Instance.orderManager.GenerateRandomOrder();
-        
-        if (order == null)
-        {
-            Debug.LogError("[MenuPanel] ❌ GenerateRandomOrder() returned NULL!");
-            return;
-        }
-        
-        Debug.Log($"[MenuPanel] ✅ Order received: {order.recipeName}");
-        
-        if (GameManager.Instance.uiManager == null)
-        {
-            Debug.LogError("[MenuPanel] ❌ GameManager.Instance.uiManager is NULL!");
-            return;
-        }
-        
-        Debug.Log("[MenuPanel] ✅ UIManager exists");
-        Debug.Log("[MenuPanel] Calling ShowOrderPanel()...");
-        
-        GameManager.Instance.uiManager.ShowOrderPanel(order);
-        
-        Debug.Log("[MenuPanel] ✅ ShowOrderPanel() called successfully");
-        Debug.Log("[MenuPanel] ========================================");
+        Debug.Log("[MenuPanel] ✅ Hide animation started");
     }
 }
