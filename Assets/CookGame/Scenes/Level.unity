@@ -4212,7 +4212,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 19ff402de5ed12749ac3273abb227d22, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  getOrderButton: {fileID: 0}
+  getOrderButton: {fileID: 2139251066}
   titleText: {fileID: 0}
 --- !u!225 &765656735
 CanvasGroup:
@@ -5640,7 +5640,7 @@ MonoBehaviour:
   magicTargetText: {fileID: 1820687185}
   turnsText: {fileID: 629273722}
   difficultyText: {fileID: 0}
-  acceptButton: {fileID: 0}
+  acceptButton: {fileID: 1449732355}
   declineButton: {fileID: 0}
   recipeIcon: {fileID: 0}
 --- !u!224 &1049680995
@@ -11422,19 +11422,7 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 2139251067}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 765656734}
-        m_TargetAssemblyTypeName: MenuPanel, Assembly-CSharp
-        m_MethodName: OnGetOrderButtonPressed
-        m_Mode: 1
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
+      m_Calls: []
 --- !u!114 &2139251067
 MonoBehaviour:
   m_ObjectHideFlags: 0
