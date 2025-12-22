@@ -9,18 +9,6 @@ public class CookingPanel : MonoBehaviour
     public TMP_Text recipeNameText;
     public TMP_Text turnsRemainingText;
     
-    [Header("Fire Boost UI")]
-    public Button fireBoostButton;
-    public TMP_Text fireBoostButtonText;
-    public Image fireBoostTimerFill;
-    public TMP_Text fireBoostTimerText;
-    
-    [Header("Fire Boost Duration Panel")]
-    public GameObject durationPanel;
-    public Button duration2sButton;
-    public Button duration3sButton;
-    public Button duration5sButton;
-    
     private CookingManager cookingManager;
     private FireBoostController fireBoostController;
     
@@ -41,8 +29,6 @@ public class CookingPanel : MonoBehaviour
             Debug.LogError("[CookingPanel] ❌ Recipe Name Text is NULL!");
         if (turnsRemainingText == null)
             Debug.LogError("[CookingPanel] ❌ Turns Remaining Text is NULL!");
-        if (fireBoostButton == null)
-            Debug.LogWarning("[CookingPanel] ⚠️ Fire Boost Button is NULL - Fire Boost UI disabled");
     }
     
     public void Setup(CookingManager manager, FireBoostController boostController)

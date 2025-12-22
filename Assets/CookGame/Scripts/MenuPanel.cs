@@ -7,7 +7,6 @@ public class MenuPanel : MonoBehaviour
 {
     [Header("UI References")]
     public Button getOrderButton;
-    public TMP_Text titleText;
     
     void Awake()
     {
@@ -50,6 +49,7 @@ public class MenuPanel : MonoBehaviour
         {
             Debug.Log($"[MenuPanel] Showing order: {newOrder.recipeName}");
             GameManager.Instance.uiManager.ShowOrderPanel(newOrder);
+            Hide();
         }
         else
         {

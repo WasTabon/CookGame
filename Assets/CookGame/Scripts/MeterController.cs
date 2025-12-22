@@ -6,10 +6,10 @@ using DG.Tweening;
 public class MeterController : MonoBehaviour
 {
     [Header("UI References")]
+    public Slider meterSlider;
     public Image fillImage;
     public Image targetZoneImage;
     public TMP_Text valueText;
-    public TMP_Text labelText;
     
     [Header("Colors")]
     public Color normalColor = new Color(0.2f, 0.6f, 1f);
@@ -35,14 +35,29 @@ public class MeterController : MonoBehaviour
     void Start()
     {
         ValidateReferences();
+        SetupSlider();
     }
     
     void ValidateReferences()
     {
-        if (fillImage == null)
-            Debug.LogError($"[MeterController] ❌ {gameObject.name} - Fill Image is NULL!");
+        if (meterSlider == null)
+            Debug.LogError($"[MeterController] ❌ {gameObject.name} - Meter Slider is NULL!");
+        else
+            Debug.Log($"[MeterController] ✅ {gameObject.name} - Meter Slider found");
+        
         if (valueText == null)
             Debug.LogWarning($"[MeterController] ⚠️ {gameObject.name} - Value Text is NULL");
+    }
+    
+    void SetupSlider()
+    {
+        if (meterSlider != null)
+        {
+            meterSlider.minValue = 0f;
+            meterSlider.maxValue = maxValue;
+            meterSlider.interactable = false;
+            Debug.Log($"[MeterController] ✅ {gameObject.name} - Slider configured (0 to {maxValue})");
+        }
     }
     
     public void Initialize(float startValue, float targetMin, float targetMax)
@@ -53,7 +68,7 @@ public class MeterController : MonoBehaviour
         TargetMin = targetMin;
         TargetMax = targetMax;
         
-        UpdateFillImmediate();
+        UpdateSliderImmediate();
         UpdateTargetZone();
         UpdateColor();
         
@@ -71,32 +86,38 @@ public class MeterController : MonoBehaviour
     public void SetValue(float newValue)
     {
         Debug.Log($"[MeterController] {gameObject.name} SetValue: {CurrentValue:F2} → {newValue:F2}");
-        
+    
         valueTween?.Kill();
-        
+    
         float startValue = CurrentValue;
         CurrentValue = Mathf.Clamp(newValue, 0f, maxValue);
-        
-        valueTween = DOTween.To(
-            () => startValue,
-            x => UpdateFillAnimated(x),
-            CurrentValue,
-            animationDuration
-        ).SetEase(Ease.OutQuad);
-        
-        UpdateColor();
-        
+    
+        if (meterSlider != null)
+        {
+            valueTween = meterSlider.DOValue(CurrentValue, animationDuration).SetEase(Ease.OutQuad);
+        }
+    
         if (valueText != null)
         {
-            valueText.transform.DOPunchScale(Vector3.one * 0.1f, 0.2f, 5);
+            DOTween.To(
+                () => startValue,
+                x => valueText.text = x.ToString("F0"),
+                CurrentValue,
+                animationDuration
+            );
+        
+            // УБРАЛ: valueText.transform.DOPunchScale(Vector3.one * 0.1f, 0.2f, 5);
         }
+    
+        UpdateColor();
     }
     
-    void UpdateFillImmediate()
+    void UpdateSliderImmediate()
     {
-        if (fillImage != null)
+        if (meterSlider != null)
         {
-            fillImage.fillAmount = CurrentValue / maxValue;
+            meterSlider.value = CurrentValue;
+            Debug.Log($"[MeterController] {gameObject.name} Slider value set to {CurrentValue}");
         }
         
         if (valueText != null)
@@ -105,43 +126,36 @@ public class MeterController : MonoBehaviour
         }
     }
     
-    void UpdateFillAnimated(float value)
-    {
-        if (fillImage != null)
-        {
-            fillImage.fillAmount = value / maxValue;
-        }
-        
-        if (valueText != null)
-        {
-            valueText.text = value.ToString("F0");
-        }
-    }
-    
     void UpdateTargetZone()
     {
-        if (targetZoneImage != null)
+        if (targetZoneImage == null || meterSlider == null) return;
+        
+        RectTransform sliderRect = meterSlider.GetComponent<RectTransform>();
+        RectTransform fillArea = meterSlider.fillRect?.parent?.GetComponent<RectTransform>();
+        
+        if (fillArea == null)
         {
-            float minNormalized = TargetMin / maxValue;
-            float maxNormalized = TargetMax / maxValue;
-            
-            RectTransform rect = targetZoneImage.rectTransform;
-            RectTransform parentRect = fillImage.rectTransform;
-            
-            float parentWidth = parentRect.rect.width;
-            float zoneWidth = (maxNormalized - minNormalized) * parentWidth;
-            float zoneX = minNormalized * parentWidth;
-            
-            rect.anchorMin = new Vector2(0, 0);
-            rect.anchorMax = new Vector2(0, 1);
-            rect.pivot = new Vector2(0, 0.5f);
-            rect.anchoredPosition = new Vector2(zoneX, 0);
-            rect.sizeDelta = new Vector2(zoneWidth, 0);
-            
-            targetZoneImage.color = targetZoneColor;
-            
-            Debug.Log($"[MeterController] {gameObject.name} Target zone: {minNormalized:F2} - {maxNormalized:F2}");
+            Debug.LogWarning($"[MeterController] {gameObject.name} - Cannot find fill area for target zone");
+            return;
         }
+        
+        float sliderWidth = fillArea.rect.width;
+        float minNormalized = TargetMin / maxValue;
+        float maxNormalized = TargetMax / maxValue;
+        
+        float zoneWidth = (maxNormalized - minNormalized) * sliderWidth;
+        float zoneX = minNormalized * sliderWidth;
+        
+        RectTransform targetRect = targetZoneImage.rectTransform;
+        targetRect.anchorMin = new Vector2(0, 0);
+        targetRect.anchorMax = new Vector2(0, 1);
+        targetRect.pivot = new Vector2(0, 0.5f);
+        targetRect.anchoredPosition = new Vector2(zoneX, 0);
+        targetRect.sizeDelta = new Vector2(zoneWidth, 0);
+        
+        targetZoneImage.color = targetZoneColor;
+        
+        Debug.Log($"[MeterController] {gameObject.name} Target zone: {TargetMin}-{TargetMax} ({minNormalized:F2}-{maxNormalized:F2})");
     }
     
     void UpdateColor()

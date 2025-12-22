@@ -713,8 +713,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4712066be55565f4d98d75c0192e9d5f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  slotButton: {fileID: 0}
-  backgroundImage: {fileID: 0}
+  slotButton: {fileID: 194796416}
+  backgroundImage: {fileID: 194796417}
   iconImage: {fileID: 627309986}
   nameText: {fileID: 1927767620}
   tasteText: {fileID: 2024846635}
@@ -1386,10 +1386,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c22cad17bfdb6d54c84dc53b2b8a7289, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  meterSlider: {fileID: 372321372}
   fillImage: {fileID: 2062271960}
   targetZoneImage: {fileID: 0}
-  valueText: {fileID: 0}
-  labelText: {fileID: 0}
+  valueText: {fileID: 2133068236}
   normalColor: {r: 0, g: 1, b: 0, a: 1}
   inTargetColor: {r: 0.2, g: 0.8, b: 0.2, a: 1}
   overflowColor: {r: 1, g: 0, b: 0, a: 1}
@@ -2066,8 +2066,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4712066be55565f4d98d75c0192e9d5f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  slotButton: {fileID: 0}
-  backgroundImage: {fileID: 0}
+  slotButton: {fileID: 558417164}
+  backgroundImage: {fileID: 558417165}
   iconImage: {fileID: 675942154}
   nameText: {fileID: 1089142431}
   tasteText: {fileID: 1050711997}
@@ -2241,7 +2241,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: 100
+  m_text: 0
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
@@ -2509,7 +2509,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: 100
+  m_text: 0
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
@@ -3006,8 +3006,8 @@ RectTransform:
   - {fileID: 1686214952}
   - {fileID: 558417166}
   - {fileID: 77483004}
-  - {fileID: 88132325}
   - {fileID: 736594434}
+  - {fileID: 88132325}
   m_Father: {fileID: 120255854}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
@@ -3029,14 +3029,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   recipeNameText: {fileID: 829178777}
   turnsRemainingText: {fileID: 882893467}
-  fireBoostButton: {fileID: 0}
-  fireBoostButtonText: {fileID: 0}
-  fireBoostTimerFill: {fileID: 0}
-  fireBoostTimerText: {fileID: 0}
-  durationPanel: {fileID: 0}
-  duration2sButton: {fileID: 0}
-  duration3sButton: {fileID: 0}
-  duration5sButton: {fileID: 0}
 --- !u!225 &644661836
 CanvasGroup:
   m_ObjectHideFlags: 0
@@ -3062,7 +3054,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 0}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -4213,7 +4205,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   getOrderButton: {fileID: 2139251066}
-  titleText: {fileID: 0}
 --- !u!225 &765656735
 CanvasGroup:
   m_ObjectHideFlags: 0
@@ -6953,10 +6944,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c22cad17bfdb6d54c84dc53b2b8a7289, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  meterSlider: {fileID: 1441105050}
   fillImage: {fileID: 1222902275}
   targetZoneImage: {fileID: 0}
-  valueText: {fileID: 0}
-  labelText: {fileID: 0}
+  valueText: {fileID: 621962081}
   normalColor: {r: 0, g: 1, b: 0, a: 1}
   inTargetColor: {r: 0.2, g: 0.8, b: 0.2, a: 1}
   overflowColor: {r: 1, g: 0, b: 0, a: 1}
@@ -8029,8 +8020,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4712066be55565f4d98d75c0192e9d5f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  slotButton: {fileID: 0}
-  backgroundImage: {fileID: 0}
+  slotButton: {fileID: 1686214953}
+  backgroundImage: {fileID: 1686214954}
   iconImage: {fileID: 1382390314}
   nameText: {fileID: 948710166}
   tasteText: {fileID: 2116003355}
@@ -8364,7 +8355,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 0}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -8401,10 +8392,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 520d5ad88b78fc6419926b914b3177ba, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  resultTitleText: {fileID: 0}
-  resultMessageText: {fileID: 0}
-  continueButton: {fileID: 0}
-  backgroundImage: {fileID: 0}
+  resultTitleText: {fileID: 1590864450}
+  resultMessageText: {fileID: 1053785875}
+  continueButton: {fileID: 714876537}
+  backgroundImage: {fileID: 1726340232}
   victoryColor: {r: 0.2, g: 0.8, b: 0.2, a: 0.9}
   failColor: {r: 0.8, g: 0.2, b: 0.2, a: 0.9}
 --- !u!225 &1726340235
@@ -11026,10 +11017,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c22cad17bfdb6d54c84dc53b2b8a7289, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  meterSlider: {fileID: 2118532648}
   fillImage: {fileID: 2025829845}
   targetZoneImage: {fileID: 0}
-  valueText: {fileID: 0}
-  labelText: {fileID: 0}
+  valueText: {fileID: 590069694}
   normalColor: {r: 0, g: 1, b: 0, a: 1}
   inTargetColor: {r: 0.2, g: 0.8, b: 0.2, a: 1}
   overflowColor: {r: 1, g: 0, b: 0, a: 1}
@@ -11263,7 +11254,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: 100
+  m_text: 0
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
