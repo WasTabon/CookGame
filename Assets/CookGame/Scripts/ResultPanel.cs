@@ -31,6 +31,10 @@ public class ResultPanel : MonoBehaviour
     public Color okayColor = new Color(0.8f, 0.5f, 0.2f, 0.9f);
     public Color failColor = new Color(0.8f, 0.2f, 0.2f, 0.9f);
     
+    [Header("Animation Settings")]
+    public float elementStagger = 0.15f;
+    public float counterDuration = 1.5f;
+    
     private RewardResult currentResult;
     
     void Awake()
@@ -120,19 +124,19 @@ public class ResultPanel : MonoBehaviour
     {
         if (tasteStatusText != null)
         {
-            tasteStatusText.text = result.tasteInRange ? "+ Taste" : "- Taste";
+            tasteStatusText.text = result.tasteInRange ? "✓ Taste" : "✗ Taste";
             tasteStatusText.color = result.tasteInRange ? Color.green : Color.red;
         }
         
         if (stabilityStatusText != null)
         {
-            stabilityStatusText.text = result.stabilityInRange ? "+ Stability" : "- Stability";
+            stabilityStatusText.text = result.stabilityInRange ? "✓ Stability" : "✗ Stability";
             stabilityStatusText.color = result.stabilityInRange ? Color.green : Color.red;
         }
         
         if (magicStatusText != null)
         {
-            magicStatusText.text = result.magicInRange ? "+ Magic" : "- Magic";
+            magicStatusText.text = result.magicInRange ? "✓ Magic" : "✗ Magic";
             magicStatusText.color = result.magicInRange ? Color.green : Color.red;
         }
     }
@@ -165,31 +169,49 @@ public class ResultPanel : MonoBehaviour
         
         if (finalRewardText != null)
         {
-            finalRewardText.text = $"0";
-            AnimateRewardCounter(result.finalReward);
+            finalRewardText.text = "0 Coins";
         }
     }
     
     void AnimateRewardCounter(int targetValue)
     {
-        if (finalRewardText == null) return;
+        if (finalRewardText == null || targetValue <= 0) return;
         
-        int currentValue = 0;
-        DOTween.To(() => currentValue, x => {
-            currentValue = x;
-            finalRewardText.text = $"{currentValue} Coins";
-        }, targetValue, 1f).SetEase(Ease.OutQuad).SetDelay(0.5f);
+        Debug.Log($"[ResultPanel] 🔢 Animating reward counter to {targetValue}");
         
-        finalRewardText.transform.DOPunchScale(Vector3.one * 0.2f, 0.3f, 5).SetDelay(1.5f);
+        if (VFXController.Instance != null)
+        {
+            VFXController.Instance.AnimateCounter(finalRewardText, 0, targetValue, counterDuration, "{0} Coins");
+        }
+        else
+        {
+            int currentValue = 0;
+            DOTween.To(() => currentValue, x => {
+                currentValue = x;
+                finalRewardText.text = $"{currentValue} Coins";
+            }, targetValue, counterDuration).SetEase(Ease.OutQuad);
+        }
+        
+        DOVirtual.DelayedCall(counterDuration, () => {
+            if (finalRewardText != null)
+            {
+                finalRewardText.transform.DOPunchScale(Vector3.one * 0.3f, 0.4f, 5);
+                
+                if (VFXController.Instance != null)
+                {
+                    VFXController.Instance.FlashSuccess();
+                }
+            }
+        });
     }
     
     Color GetGradeColor(string grade)
     {
         return grade switch
         {
-            "PERFECT" => Color.green,
-            "GOOD" => Color.yellow,
-            "OKAY" => new Color(1f, 0.5f, 0f),
+            "PERFECT" => new Color(1f, 0.84f, 0f),
+            "GOOD" => Color.green,
+            "OKAY" => Color.yellow,
             _ => Color.red
         };
     }
@@ -249,17 +271,25 @@ public class ResultPanel : MonoBehaviour
         
         if (resultTitleText != null)
         {
-            resultTitleText.transform.DOPunchScale(Vector3.one * 0.3f, 0.5f, 5).SetDelay(0.3f);
+            resultTitleText.transform.localScale = Vector3.zero;
+            resultTitleText.transform.DOScale(1f, 0.4f).SetDelay(0.2f).SetEase(Ease.OutBack);
+        }
+        
+        if (gradeText != null)
+        {
+            gradeText.transform.localScale = Vector3.zero;
+            gradeText.transform.DOScale(1f, 0.4f).SetDelay(0.35f).SetEase(Ease.OutBack);
         }
         
         AnimateMeterStatus();
+        AnimateRewardSection();
         
         Debug.Log("[ResultPanel] ✅ Show animation started");
     }
     
     void AnimateMeterStatus()
     {
-        float delay = 0.2f;
+        float delay = 0.5f;
         
         TMP_Text[] statusTexts = { tasteStatusText, stabilityStatusText, magicStatusText };
         
@@ -269,7 +299,35 @@ public class ResultPanel : MonoBehaviour
             {
                 text.transform.localScale = Vector3.zero;
                 text.transform.DOScale(1f, 0.3f).SetDelay(delay).SetEase(Ease.OutBack);
-                delay += 0.15f;
+                delay += elementStagger;
+            }
+        }
+    }
+    
+    void AnimateRewardSection()
+    {
+        float delay = 1.0f;
+        
+        TMP_Text[] rewardTexts = { baseRewardText, meterBonusText, turnsBonusText };
+        
+        foreach (var text in rewardTexts)
+        {
+            if (text != null && text.gameObject.activeSelf)
+            {
+                text.transform.localScale = Vector3.zero;
+                text.transform.DOScale(1f, 0.3f).SetDelay(delay).SetEase(Ease.OutBack);
+                delay += elementStagger;
+            }
+        }
+        
+        if (finalRewardText != null)
+        {
+            finalRewardText.transform.localScale = Vector3.zero;
+            finalRewardText.transform.DOScale(1f, 0.4f).SetDelay(delay).SetEase(Ease.OutBack);
+            
+            if (currentResult != null && currentResult.finalReward > 0)
+            {
+                DOVirtual.DelayedCall(delay + 0.5f, () => AnimateRewardCounter(currentResult.finalReward));
             }
         }
     }

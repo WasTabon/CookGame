@@ -11,6 +11,9 @@ public class MeterController : MonoBehaviour
     public Image targetZoneImage;
     public TMP_Text valueText;
     
+    [Header("Glow Effect")]
+    public MeterGlowController glowController;
+    
     [Header("Colors")]
     public Color normalColor = new Color(0.2f, 0.6f, 1f);
     public Color inTargetColor = new Color(0.2f, 0.8f, 0.2f);
@@ -26,6 +29,7 @@ public class MeterController : MonoBehaviour
     public float TargetMax { get; private set; }
     
     private Tween valueTween;
+    private bool wasInTarget = false;
     
     void Awake()
     {
@@ -47,6 +51,11 @@ public class MeterController : MonoBehaviour
         
         if (valueText == null)
             Debug.LogWarning($"[MeterController] ⚠️ {gameObject.name} - Value Text is NULL");
+        
+        if (glowController == null)
+            Debug.Log($"[MeterController] ℹ️ {gameObject.name} - No GlowController (optional)");
+        else
+            Debug.Log($"[MeterController] ✅ {gameObject.name} - GlowController found");
     }
     
     void SetupSlider()
@@ -67,10 +76,17 @@ public class MeterController : MonoBehaviour
         CurrentValue = startValue;
         TargetMin = targetMin;
         TargetMax = targetMax;
+        wasInTarget = false;
         
         UpdateSliderImmediate();
         UpdateTargetZone();
         UpdateColor();
+        UpdateGlow();
+        
+        if (glowController != null)
+        {
+            glowController.Reset();
+        }
         
         Debug.Log($"[MeterController] {gameObject.name} ✅ Initialized");
     }
@@ -105,11 +121,33 @@ public class MeterController : MonoBehaviour
                 CurrentValue,
                 animationDuration
             );
-        
-            // УБРАЛ: valueText.transform.DOPunchScale(Vector3.one * 0.1f, 0.2f, 5);
         }
     
         UpdateColor();
+        UpdateGlow();
+        CheckTargetTransition();
+    }
+    
+    void CheckTargetTransition()
+    {
+        bool isNowInTarget = IsInTargetRange();
+        
+        if (isNowInTarget && !wasInTarget)
+        {
+            Debug.Log($"[MeterController] {gameObject.name} 🎯 Entered target zone!");
+            
+            if (VFXController.Instance != null)
+            {
+                VFXController.Instance.PlayMeterInTarget();
+            }
+            
+            if (valueText != null)
+            {
+                valueText.transform.DOPunchScale(Vector3.one * 0.2f, 0.3f, 5);
+            }
+        }
+        
+        wasInTarget = isNowInTarget;
     }
     
     void UpdateSliderImmediate()
@@ -182,10 +220,17 @@ public class MeterController : MonoBehaviour
         fillImage.DOColor(targetColor, 0.3f);
     }
     
+    void UpdateGlow()
+    {
+        if (glowController != null)
+        {
+            glowController.UpdateGlow(CurrentValue, TargetMin, TargetMax, maxValue);
+        }
+    }
+    
     public bool IsInTargetRange()
     {
         bool inRange = CurrentValue >= TargetMin && CurrentValue <= TargetMax;
-        Debug.Log($"[MeterController] {gameObject.name} IsInTargetRange: {inRange} ({CurrentValue:F1} in {TargetMin}-{TargetMax})");
         return inRange;
     }
     

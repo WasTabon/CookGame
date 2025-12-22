@@ -20,6 +20,9 @@ public class IngredientSlot : MonoBehaviour
     public Color rareColor = new Color(0.3f, 0.5f, 1f);
     public Color epicColor = new Color(0.8f, 0.3f, 1f);
     
+    [Header("Selection Effect")]
+    public Color selectedGlowColor = new Color(1f, 1f, 0f, 0.5f);
+    
     [Header("Animation Settings")]
     public float spinDuration = 0.5f;
     public int spinRotations = 2;
@@ -27,6 +30,7 @@ public class IngredientSlot : MonoBehaviour
     private IngredientInstance currentIngredient;
     private Action onClickCallback;
     private Sequence displaySequence;
+    private bool isSelected = false;
     
     void Awake()
     {
@@ -62,6 +66,7 @@ public class IngredientSlot : MonoBehaviour
         
         currentIngredient = ingredient;
         onClickCallback = onClick;
+        isSelected = false;
         
         gameObject.SetActive(true);
         
@@ -78,6 +83,7 @@ public class IngredientSlot : MonoBehaviour
         displaySequence?.Kill();
         
         transform.localScale = Vector3.zero;
+        transform.localRotation = Quaternion.identity;
         
         CanvasGroup canvasGroup = GetComponent<CanvasGroup>();
         if (canvasGroup == null)
@@ -94,9 +100,27 @@ public class IngredientSlot : MonoBehaviour
         
         displaySequence.Append(transform.DOScale(1f, 0.2f).SetEase(Ease.InOutSine));
         
-        displaySequence.OnComplete(() => UpdateUI());
+        displaySequence.OnComplete(() => {
+            UpdateUI();
+            StartIdleAnimation();
+        });
         
         Debug.Log($"[IngredientSlot] {gameObject.name} ✅ Display animation started");
+    }
+    
+    void StartIdleAnimation()
+    {
+        if (isSelected) return;
+        
+        transform.DOScale(1.02f, 0.8f)
+            .SetEase(Ease.InOutSine)
+            .SetLoops(-1, LoopType.Yoyo)
+            .SetId($"{gameObject.name}_idle");
+    }
+    
+    void StopIdleAnimation()
+    {
+        DOTween.Kill($"{gameObject.name}_idle");
     }
     
     void UpdateUI()
@@ -170,9 +194,29 @@ public class IngredientSlot : MonoBehaviour
             slotButton.interactable = false;
         }
         
-        transform.DOPunchScale(Vector3.one * 0.2f, 0.3f, 5);
+        isSelected = true;
+        StopIdleAnimation();
+        
+        PlaySelectAnimation();
         
         onClickCallback?.Invoke();
+    }
+    
+    void PlaySelectAnimation()
+    {
+        displaySequence?.Kill();
+        
+        Sequence selectSequence = DOTween.Sequence();
+        
+        selectSequence.Append(transform.DOScale(1.3f, 0.15f).SetEase(Ease.OutQuad));
+        selectSequence.Append(transform.DOScale(1.1f, 0.1f).SetEase(Ease.InOutSine));
+        
+        if (backgroundImage != null)
+        {
+            Color originalColor = backgroundImage.color;
+            backgroundImage.DOColor(selectedGlowColor, 0.1f)
+                .OnComplete(() => backgroundImage.DOColor(originalColor, 0.2f));
+        }
     }
     
     public void Hide()
@@ -180,6 +224,7 @@ public class IngredientSlot : MonoBehaviour
         Debug.Log($"[IngredientSlot] {gameObject.name} Hide()");
         
         displaySequence?.Kill();
+        StopIdleAnimation();
         
         Sequence hideSequence = DOTween.Sequence();
         
@@ -189,9 +234,21 @@ public class IngredientSlot : MonoBehaviour
             canvasGroup = gameObject.AddComponent<CanvasGroup>();
         }
         
-        hideSequence.Append(transform.DOScale(0f, 0.3f).SetEase(Ease.InBack));
+        if (isSelected)
+        {
+            hideSequence.Append(transform.DOScale(1.5f, 0.15f).SetEase(Ease.OutQuad));
+            hideSequence.Append(transform.DOScale(0f, 0.2f).SetEase(Ease.InBack));
+        }
+        else
+        {
+            hideSequence.Append(transform.DOScale(0f, 0.25f).SetEase(Ease.InBack));
+        }
+        
         hideSequence.Join(canvasGroup.DOFade(0f, 0.2f));
-        hideSequence.OnComplete(() => gameObject.SetActive(false));
+        hideSequence.OnComplete(() => {
+            gameObject.SetActive(false);
+            isSelected = false;
+        });
         
         Debug.Log($"[IngredientSlot] {gameObject.name} ✅ Hide animation started");
     }
@@ -200,13 +257,16 @@ public class IngredientSlot : MonoBehaviour
     {
         Debug.Log($"[IngredientSlot] {gameObject.name} Clear()");
         
+        StopIdleAnimation();
         currentIngredient = null;
         onClickCallback = null;
+        isSelected = false;
         gameObject.SetActive(false);
     }
     
     void OnDestroy()
     {
         displaySequence?.Kill();
+        StopIdleAnimation();
     }
 }

@@ -135,6 +135,11 @@ public class CookingManager : MonoBehaviour
         Debug.Log("[CookingManager] 🎰 Jackpot triggered - waiting for effect selection");
         waitingForJackpotSelection = true;
         waitingForSelection = false;
+        
+        if (VFXController.Instance != null)
+        {
+            VFXController.Instance.FlashJackpot();
+        }
     }
     
     void OnJackpotEffectSelected(JackpotEffectType effect)
@@ -174,6 +179,11 @@ public class CookingManager : MonoBehaviour
         stabilityMeter.AddValue(10f);
         magicMeter.AddValue(10f);
         
+        if (VFXController.Instance != null)
+        {
+            VFXController.Instance.ShakeMedium();
+        }
+        
         CheckForOverflow();
     }
     
@@ -207,6 +217,11 @@ public class CookingManager : MonoBehaviour
         stabilityMeter.AddValue(totalStability);
         magicMeter.AddValue(totalMagic);
         
+        if (VFXController.Instance != null)
+        {
+            VFXController.Instance.ShakeHeavy();
+        }
+        
         slot1.Hide();
         slot2.Hide();
         slot3.Hide();
@@ -224,6 +239,12 @@ public class CookingManager : MonoBehaviour
     void OnShieldUsed(MeterType meter)
     {
         Debug.Log($"[CookingManager] 🛡️ Shield used to block {meter} overflow!");
+        
+        if (VFXController.Instance != null)
+        {
+            VFXController.Instance.FlashSuccess();
+            VFXController.Instance.ShakeMedium();
+        }
     }
     
     public void StartCooking(RecipeData recipe)
@@ -363,6 +384,11 @@ public class CookingManager : MonoBehaviour
         Debug.Log($"[CookingManager] ========================================");
         Debug.Log($"[CookingManager] 🍳 Selected: {selected.data.ingredientName}");
         
+        if (VFXController.Instance != null)
+        {
+            VFXController.Instance.PlayIngredientSelect();
+        }
+        
         float multiplier = 1f;
         if (jackpotController != null && jackpotController.HasActiveWildMultiplier)
         {
@@ -466,6 +492,11 @@ public class CookingManager : MonoBehaviour
             if (stabilityOverflow) Debug.Log($"[CookingManager]   Stability: {stabilityMeter.CurrentValue:F1} > {currentRecipe.stabilityMax}");
             if (magicOverflow) Debug.Log($"[CookingManager]   Magic: {magicMeter.CurrentValue:F1} > {currentRecipe.magicMax}");
             
+            if (VFXController.Instance != null)
+            {
+                VFXController.Instance.FlashOverflow();
+            }
+            
             EndGame(null);
             return true;
         }
@@ -532,9 +563,16 @@ public class CookingManager : MonoBehaviour
             fireBoostController.DisableBoost();
         }
         
-        if (result != null && result.finalReward > 0)
+        bool hasReward = result != null && result.finalReward > 0;
+        
+        if (hasReward)
         {
             Debug.Log($"[CookingManager] 🎉 ORDER COMPLETE! Grade: {result.grade}, Reward: {result.finalReward}");
+            
+            if (VFXController.Instance != null)
+            {
+                VFXController.Instance.FlashVictory();
+            }
             
             if (CurrencyManager.Instance != null)
             {
@@ -544,6 +582,11 @@ public class CookingManager : MonoBehaviour
         else
         {
             Debug.Log("[CookingManager] 💀 ORDER FAILED!");
+            
+            if (VFXController.Instance != null)
+            {
+                VFXController.Instance.FlashDefeat();
+            }
         }
         
         GameManager.Instance.uiManager.ShowResultPanel(result);
