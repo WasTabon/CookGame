@@ -18,6 +18,8 @@ public class UIManager : MonoBehaviour
     [Header("Manager References")]
     public CookingManager cookingManager;
     public FireBoostController fireBoostController;
+    public JackpotController jackpotController;
+    public ShieldController shieldController;
     
     void Awake()
     {
@@ -170,6 +172,26 @@ public class UIManager : MonoBehaviour
             if (resultPanelScript != null)
             {
                 resultPanelScript.DisplayResult(victory);
+                resultPanelScript.Show();
+            }
+            else
+            {
+                AnimatePanel(resultPanel);
+            }
+        }
+    }
+    
+    public void ShowResultPanel(RewardResult result)
+    {
+        Debug.Log($"[UIManager] ShowResultPanel() - Result: {result?.grade ?? "NULL"}");
+        
+        if (resultPanel != null)
+        {
+            resultPanel.SetActive(true);
+            
+            if (resultPanelScript != null)
+            {
+                resultPanelScript.DisplayResult(result);
                 resultPanelScript.Show();
             }
             else

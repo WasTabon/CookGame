@@ -23,6 +23,9 @@ public class RecipeData : ScriptableObject
     public enum Difficulty { Easy, Medium, Hard, Elite }
     public Difficulty difficulty;
     
+    [Header("Reward")]
+    public int baseReward = 100;
+    
     [Header("Visual")]
     public Sprite icon;
     
@@ -33,6 +36,7 @@ public class RecipeData : ScriptableObject
         Debug.Log($"[RecipeData]   Stability: {stabilityMin}-{stabilityMax}");
         Debug.Log($"[RecipeData]   Magic: {magicMin}-{magicMax}");
         Debug.Log($"[RecipeData]   Turns: {totalTurns}, Difficulty: {difficulty}");
+        Debug.Log($"[RecipeData]   Base Reward: {baseReward}");
     }
     
     public bool IsValueInTasteRange(float value)
@@ -48,5 +52,17 @@ public class RecipeData : ScriptableObject
     public bool IsValueInMagicRange(float value)
     {
         return value >= magicMin && value <= magicMax;
+    }
+    
+    public int GetRewardByDifficulty()
+    {
+        return difficulty switch
+        {
+            Difficulty.Easy => 50,
+            Difficulty.Medium => 100,
+            Difficulty.Hard => 200,
+            Difficulty.Elite => 500,
+            _ => 100
+        };
     }
 }

@@ -12,6 +12,10 @@ public class GameManager : MonoBehaviour
     public CookingManager cookingManager;
     public UIManager uiManager;
     public FireBoostController fireBoostController;
+    public JackpotController jackpotController;
+    public ShieldController shieldController;
+    public RewardCalculator rewardCalculator;
+    public CurrencyManager currencyManager;
     
     void Awake()
     {
@@ -53,9 +57,29 @@ public class GameManager : MonoBehaviour
             Debug.Log("[GameManager] ✅ UIManager reference found");
         
         if (fireBoostController == null)
-            Debug.LogWarning("[GameManager] ⚠️ FireBoostController reference is NULL - Fire Boost disabled");
+            Debug.LogWarning("[GameManager] ⚠️ FireBoostController reference is NULL");
         else
             Debug.Log("[GameManager] ✅ FireBoostController reference found");
+        
+        if (jackpotController == null)
+            Debug.LogWarning("[GameManager] ⚠️ JackpotController reference is NULL");
+        else
+            Debug.Log("[GameManager] ✅ JackpotController reference found");
+        
+        if (shieldController == null)
+            Debug.LogWarning("[GameManager] ⚠️ ShieldController reference is NULL");
+        else
+            Debug.Log("[GameManager] ✅ ShieldController reference found");
+        
+        if (rewardCalculator == null)
+            Debug.LogWarning("[GameManager] ⚠️ RewardCalculator reference is NULL");
+        else
+            Debug.Log("[GameManager] ✅ RewardCalculator reference found");
+        
+        if (currencyManager == null)
+            Debug.LogWarning("[GameManager] ⚠️ CurrencyManager reference is NULL - will use singleton");
+        else
+            Debug.Log("[GameManager] ✅ CurrencyManager reference found");
         
         Debug.Log("[GameManager] ========================================");
     }

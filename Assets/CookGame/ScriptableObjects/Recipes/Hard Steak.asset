@@ -21,3 +21,5 @@ MonoBehaviour:
   magicMax: 78
   totalTurns: 6
   difficulty: 2
+  baseReward: 200
+  icon: {fileID: 0}

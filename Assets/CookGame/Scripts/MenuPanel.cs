@@ -8,6 +8,10 @@ public class MenuPanel : MonoBehaviour
     [Header("UI References")]
     public Button getOrderButton;
     
+    [Header("Currency Display")]
+    public TMP_Text coinsText;
+    public TMP_Text gemsText;
+    
     void Awake()
     {
         Debug.Log("[MenuPanel] Awake() called");
@@ -18,6 +22,7 @@ public class MenuPanel : MonoBehaviour
         Debug.Log("[MenuPanel] Start() called");
         ValidateReferences();
         SetupButtons();
+        SetupCurrencyDisplay();
     }
     
     void ValidateReferences()
@@ -35,6 +40,51 @@ public class MenuPanel : MonoBehaviour
             getOrderButton.onClick.AddListener(OnGetOrderClicked);
             Debug.Log("[MenuPanel] ✅ Get Order button listener added");
         }
+    }
+    
+    void SetupCurrencyDisplay()
+    {
+        if (CurrencyManager.Instance != null)
+        {
+            CurrencyManager.Instance.OnCoinsChanged += UpdateCoinsDisplay;
+            CurrencyManager.Instance.OnGemsChanged += UpdateGemsDisplay;
+            
+            UpdateCoinsDisplay(CurrencyManager.Instance.Coins);
+            UpdateGemsDisplay(CurrencyManager.Instance.Gems);
+            
+            Debug.Log("[MenuPanel] ✅ Currency display setup complete");
+        }
+        else
+        {
+            Debug.LogWarning("[MenuPanel] ⚠️ CurrencyManager.Instance is NULL");
+        }
+    }
+    
+    void UpdateCoinsDisplay(int amount)
+    {
+        if (coinsText != null)
+        {
+            coinsText.text = FormatNumber(amount);
+            coinsText.transform.DOPunchScale(Vector3.one * 0.1f, 0.2f, 5);
+        }
+    }
+    
+    void UpdateGemsDisplay(int amount)
+    {
+        if (gemsText != null)
+        {
+            gemsText.text = FormatNumber(amount);
+            gemsText.transform.DOPunchScale(Vector3.one * 0.1f, 0.2f, 5);
+        }
+    }
+    
+    string FormatNumber(int number)
+    {
+        if (number >= 1000000)
+            return (number / 1000000f).ToString("F1") + "M";
+        if (number >= 1000)
+            return (number / 1000f).ToString("F1") + "K";
+        return number.ToString();
     }
     
     void OnGetOrderClicked()
@@ -62,6 +112,12 @@ public class MenuPanel : MonoBehaviour
         Debug.Log("[MenuPanel] Show()");
         
         gameObject.SetActive(true);
+        
+        if (CurrencyManager.Instance != null)
+        {
+            UpdateCoinsDisplay(CurrencyManager.Instance.Coins);
+            UpdateGemsDisplay(CurrencyManager.Instance.Gems);
+        }
         
         CanvasGroup canvasGroup = GetComponent<CanvasGroup>();
         if (canvasGroup == null)
@@ -95,5 +151,14 @@ public class MenuPanel : MonoBehaviour
         hideSequence.OnComplete(() => gameObject.SetActive(false));
         
         Debug.Log("[MenuPanel] ✅ Hide animation started");
+    }
+    
+    void OnDestroy()
+    {
+        if (CurrencyManager.Instance != null)
+        {
+            CurrencyManager.Instance.OnCoinsChanged -= UpdateCoinsDisplay;
+            CurrencyManager.Instance.OnGemsChanged -= UpdateGemsDisplay;
+        }
     }
 }

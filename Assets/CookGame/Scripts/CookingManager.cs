@@ -17,15 +17,22 @@ public class CookingManager : MonoBehaviour
     public IngredientSlot slot2;
     public IngredientSlot slot3;
     
-    [Header("Fire Boost")]
+    [Header("Controllers")]
     public FireBoostController fireBoostController;
+    public JackpotController jackpotController;
+    public ShieldController shieldController;
+    public RewardCalculator rewardCalculator;
     
     public RecipeData currentRecipe { get; private set; }
     public int turnsRemaining { get; private set; }
+    public int turnsUsed { get; private set; }
     public bool isGameOver { get; private set; }
+    public bool canServeEarly { get; private set; }
     
     private IngredientInstance[] currentIngredients = new IngredientInstance[3];
     private bool waitingForSelection = false;
+    private bool waitingForJackpotSelection = false;
+    private bool waitingForShieldSelection = false;
     
     void Awake()
     {
@@ -36,7 +43,7 @@ public class CookingManager : MonoBehaviour
     {
         Debug.Log("[CookingManager] Start() called");
         ValidateReferences();
-        SetupFireBoost();
+        SetupControllers();
     }
     
     void ValidateReferences()
@@ -61,18 +68,47 @@ public class CookingManager : MonoBehaviour
             Debug.LogError("[CookingManager] ❌ Slot3 is NULL!");
         
         if (fireBoostController == null)
-            Debug.LogWarning("[CookingManager] ⚠️ FireBoostController is NULL - Fire Boost disabled");
+            Debug.LogWarning("[CookingManager] ⚠️ FireBoostController is NULL");
         else
             Debug.Log("[CookingManager] ✅ FireBoostController found");
+        
+        if (jackpotController == null)
+            Debug.LogWarning("[CookingManager] ⚠️ JackpotController is NULL");
+        else
+            Debug.Log("[CookingManager] ✅ JackpotController found");
+        
+        if (shieldController == null)
+            Debug.LogWarning("[CookingManager] ⚠️ ShieldController is NULL");
+        else
+            Debug.Log("[CookingManager] ✅ ShieldController found");
+        
+        if (rewardCalculator == null)
+            Debug.LogWarning("[CookingManager] ⚠️ RewardCalculator is NULL");
+        else
+            Debug.Log("[CookingManager] ✅ RewardCalculator found");
     }
     
-    void SetupFireBoost()
+    void SetupControllers()
     {
         if (fireBoostController != null)
         {
             fireBoostController.OnBoostTick += OnFireBoostTick;
             fireBoostController.OnBoostEnded += OnFireBoostEnded;
             Debug.Log("[CookingManager] ✅ Fire Boost events subscribed");
+        }
+        
+        if (jackpotController != null)
+        {
+            jackpotController.OnEffectSelected += OnJackpotEffectSelected;
+            jackpotController.OnJackpotTriggered += OnJackpotTriggered;
+            Debug.Log("[CookingManager] ✅ Jackpot events subscribed");
+        }
+        
+        if (shieldController != null)
+        {
+            shieldController.OnShieldActivated += OnShieldActivated;
+            shieldController.OnShieldUsed += OnShieldUsed;
+            Debug.Log("[CookingManager] ✅ Shield events subscribed");
         }
     }
     
@@ -94,6 +130,102 @@ public class CookingManager : MonoBehaviour
         Debug.Log("[CookingManager] 🔥 Fire Boost ended notification received");
     }
     
+    void OnJackpotTriggered()
+    {
+        Debug.Log("[CookingManager] 🎰 Jackpot triggered - waiting for effect selection");
+        waitingForJackpotSelection = true;
+        waitingForSelection = false;
+    }
+    
+    void OnJackpotEffectSelected(JackpotEffectType effect)
+    {
+        Debug.Log($"[CookingManager] 🎰 Jackpot effect selected: {effect}");
+        waitingForJackpotSelection = false;
+        
+        switch (effect)
+        {
+            case JackpotEffectType.MeterBoost:
+                ApplyMeterBoost();
+                break;
+            case JackpotEffectType.WildMultiplier:
+                Debug.Log("[CookingManager] 🎰 Wild Multiplier active - next ingredient x2");
+                break;
+            case JackpotEffectType.ZoneShield:
+                if (shieldController != null)
+                {
+                    waitingForShieldSelection = true;
+                    shieldController.ActivateShieldSelection();
+                    return;
+                }
+                break;
+            case JackpotEffectType.TripleApply:
+                ApplyTripleIngredients();
+                return;
+        }
+        
+        waitingForSelection = true;
+    }
+    
+    void ApplyMeterBoost()
+    {
+        Debug.Log("[CookingManager] 🎰 Applying Meter Boost: +10 to all meters");
+        
+        tasteMeter.AddValue(10f);
+        stabilityMeter.AddValue(10f);
+        magicMeter.AddValue(10f);
+        
+        CheckForOverflow();
+    }
+    
+    void ApplyTripleIngredients()
+    {
+        Debug.Log("[CookingManager] 🎰 TRIPLE APPLY - Applying all 3 ingredients!");
+        
+        waitingForSelection = false;
+        
+        if (fireBoostController != null)
+        {
+            fireBoostController.DisableBoost();
+        }
+        
+        float totalTaste = 0f;
+        float totalStability = 0f;
+        float totalMagic = 0f;
+        
+        for (int i = 0; i < 3; i++)
+        {
+            totalTaste += currentIngredients[i].tasteEffect;
+            totalStability += currentIngredients[i].stabilityEffect;
+            totalMagic += currentIngredients[i].magicEffect;
+            
+            Debug.Log($"[CookingManager]   Ingredient {i + 1}: T+{currentIngredients[i].tasteEffect:F1} S+{currentIngredients[i].stabilityEffect:F1} M+{currentIngredients[i].magicEffect:F1}");
+        }
+        
+        Debug.Log($"[CookingManager]   TOTAL: T+{totalTaste:F1} S+{totalStability:F1} M+{totalMagic:F1}");
+        
+        tasteMeter.AddValue(totalTaste);
+        stabilityMeter.AddValue(totalStability);
+        magicMeter.AddValue(totalMagic);
+        
+        slot1.Hide();
+        slot2.Hide();
+        slot3.Hide();
+        
+        DOVirtual.DelayedCall(0.5f, () => CheckGameState());
+    }
+    
+    void OnShieldActivated(MeterType meter)
+    {
+        Debug.Log($"[CookingManager] 🛡️ Shield activated on: {meter}");
+        waitingForShieldSelection = false;
+        waitingForSelection = true;
+    }
+    
+    void OnShieldUsed(MeterType meter)
+    {
+        Debug.Log($"[CookingManager] 🛡️ Shield used to block {meter} overflow!");
+    }
+    
     public void StartCooking(RecipeData recipe)
     {
         Debug.Log($"[CookingManager] ========================================");
@@ -102,17 +234,32 @@ public class CookingManager : MonoBehaviour
         Debug.Log($"[CookingManager] Targets - Stability: {recipe.stabilityMin}-{recipe.stabilityMax}");
         Debug.Log($"[CookingManager] Targets - Magic: {recipe.magicMin}-{recipe.magicMax}");
         Debug.Log($"[CookingManager] Turns: {recipe.totalTurns}");
+        Debug.Log($"[CookingManager] Base Reward: {recipe.baseReward}");
         Debug.Log($"[CookingManager] ========================================");
         
         currentRecipe = recipe;
         turnsRemaining = recipe.totalTurns;
+        turnsUsed = 0;
         isGameOver = false;
+        canServeEarly = false;
+        waitingForJackpotSelection = false;
+        waitingForShieldSelection = false;
         
         InitializeMeters();
         
         if (fireBoostController != null)
         {
             fireBoostController.EnableBoost();
+        }
+        
+        if (jackpotController != null)
+        {
+            jackpotController.ResetForNewCooking();
+        }
+        
+        if (shieldController != null)
+        {
+            shieldController.ResetForNewCooking();
         }
         
         DOVirtual.DelayedCall(0.5f, () => RollNewIngredients());
@@ -154,18 +301,17 @@ public class CookingManager : MonoBehaviour
             Debug.Log($"[CookingManager]   Effects: T+{currentIngredients[i].tasteEffect:F1} S+{currentIngredients[i].stabilityEffect:F1} M+{currentIngredients[i].magicEffect:F1}");
         }
         
-        CheckForJackpot();
+        bool isJackpot = false;
+        if (jackpotController != null)
+        {
+            isJackpot = jackpotController.CheckForJackpot(currentIngredients);
+        }
         
         DisplayIngredients();
-        waitingForSelection = true;
-    }
-    
-    void CheckForJackpot()
-    {
-        if (currentIngredients[0].data == currentIngredients[1].data &&
-            currentIngredients[1].data == currentIngredients[2].data)
+        
+        if (!isJackpot)
         {
-            Debug.Log($"[CookingManager] 🎰 JACKPOT! Three {currentIngredients[0].data.ingredientName}!");
+            waitingForSelection = true;
         }
     }
     
@@ -194,6 +340,18 @@ public class CookingManager : MonoBehaviour
             return;
         }
         
+        if (waitingForJackpotSelection)
+        {
+            Debug.Log("[CookingManager] ⚠️ Waiting for jackpot selection, ignoring click");
+            return;
+        }
+        
+        if (waitingForShieldSelection)
+        {
+            Debug.Log("[CookingManager] ⚠️ Waiting for shield selection, ignoring click");
+            return;
+        }
+        
         waitingForSelection = false;
         
         if (fireBoostController != null)
@@ -204,11 +362,20 @@ public class CookingManager : MonoBehaviour
         IngredientInstance selected = currentIngredients[slotIndex];
         Debug.Log($"[CookingManager] ========================================");
         Debug.Log($"[CookingManager] 🍳 Selected: {selected.data.ingredientName}");
-        Debug.Log($"[CookingManager] Applying: T+{selected.tasteEffect:F1} S+{selected.stabilityEffect:F1} M+{selected.magicEffect:F1}");
+        
+        float multiplier = 1f;
+        if (jackpotController != null && jackpotController.HasActiveWildMultiplier)
+        {
+            multiplier = jackpotController.GetWildMultiplier();
+            jackpotController.ClearWildMultiplier();
+            Debug.Log($"[CookingManager] 🎰 Wild Multiplier applied: x{multiplier}");
+        }
+        
+        Debug.Log($"[CookingManager] Applying: T+{selected.tasteEffect * multiplier:F1} S+{selected.stabilityEffect * multiplier:F1} M+{selected.magicEffect * multiplier:F1}");
         
         HideUnselectedSlots(slotIndex);
         
-        ApplyIngredient(selected);
+        ApplyIngredient(selected, multiplier);
     }
     
     void HideUnselectedSlots(int selectedIndex)
@@ -220,7 +387,7 @@ public class CookingManager : MonoBehaviour
         if (selectedIndex != 2) slot3.Hide();
     }
     
-    void ApplyIngredient(IngredientInstance ingredient)
+    void ApplyIngredient(IngredientInstance ingredient, float multiplier = 1f)
     {
         Debug.Log("[CookingManager] Applying ingredient effects...");
         
@@ -228,14 +395,17 @@ public class CookingManager : MonoBehaviour
         float prevStability = stabilityMeter.CurrentValue;
         float prevMagic = magicMeter.CurrentValue;
         
-        tasteMeter.AddValue(ingredient.tasteEffect);
-        stabilityMeter.AddValue(ingredient.stabilityEffect);
-        magicMeter.AddValue(ingredient.magicEffect);
+        tasteMeter.AddValue(ingredient.tasteEffect * multiplier);
+        stabilityMeter.AddValue(ingredient.stabilityEffect * multiplier);
+        magicMeter.AddValue(ingredient.magicEffect * multiplier);
         
         Debug.Log($"[CookingManager] Taste: {prevTaste:F1} → {tasteMeter.CurrentValue:F1}");
         Debug.Log($"[CookingManager] Stability: {prevStability:F1} → {stabilityMeter.CurrentValue:F1}");
         Debug.Log($"[CookingManager] Magic: {prevMagic:F1} → {magicMeter.CurrentValue:F1}");
         Debug.Log($"[CookingManager] ========================================");
+        
+        turnsUsed++;
+        canServeEarly = turnsUsed >= 1;
         
         DOVirtual.DelayedCall(0.5f, () => CheckGameState());
     }
@@ -254,7 +424,7 @@ public class CookingManager : MonoBehaviour
         
         if (turnsRemaining <= 0)
         {
-            CheckVictoryCondition();
+            CompleteOrder();
         }
         else
         {
@@ -270,57 +440,126 @@ public class CookingManager : MonoBehaviour
         
         if (tasteOverflow || stabilityOverflow || magicOverflow)
         {
-            Debug.Log("[CookingManager] ❌ OVERFLOW DETECTED!");
+            Debug.Log("[CookingManager] ⚠️ OVERFLOW DETECTED - Checking shield...");
+            
+            if (shieldController != null && shieldController.HasActiveShield)
+            {
+                if (tasteOverflow && shieldController.TryBlockOverflow(MeterType.Taste))
+                {
+                    tasteMeter.SetValue(currentRecipe.tasteMax);
+                    return false;
+                }
+                if (stabilityOverflow && shieldController.TryBlockOverflow(MeterType.Stability))
+                {
+                    stabilityMeter.SetValue(currentRecipe.stabilityMax);
+                    return false;
+                }
+                if (magicOverflow && shieldController.TryBlockOverflow(MeterType.Magic))
+                {
+                    magicMeter.SetValue(currentRecipe.magicMax);
+                    return false;
+                }
+            }
+            
+            Debug.Log("[CookingManager] ❌ OVERFLOW - No shield protection!");
             if (tasteOverflow) Debug.Log($"[CookingManager]   Taste: {tasteMeter.CurrentValue:F1} > {currentRecipe.tasteMax}");
             if (stabilityOverflow) Debug.Log($"[CookingManager]   Stability: {stabilityMeter.CurrentValue:F1} > {currentRecipe.stabilityMax}");
             if (magicOverflow) Debug.Log($"[CookingManager]   Magic: {magicMeter.CurrentValue:F1} > {currentRecipe.magicMax}");
             
-            EndGame(false);
+            EndGame(null);
             return true;
         }
         
         return false;
     }
     
-    void CheckVictoryCondition()
+    public void ServeEarly()
     {
-        Debug.Log("[CookingManager] Checking victory condition...");
+        if (!canServeEarly)
+        {
+            Debug.Log("[CookingManager] ⚠️ Cannot serve early - need at least 1 ingredient used");
+            return;
+        }
         
-        bool tasteInRange = tasteMeter.CurrentValue >= currentRecipe.tasteMin && 
-                           tasteMeter.CurrentValue <= currentRecipe.tasteMax;
-        bool stabilityInRange = stabilityMeter.CurrentValue >= currentRecipe.stabilityMin && 
-                               stabilityMeter.CurrentValue <= currentRecipe.stabilityMax;
-        bool magicInRange = magicMeter.CurrentValue >= currentRecipe.magicMin && 
-                           magicMeter.CurrentValue <= currentRecipe.magicMax;
+        if (isGameOver)
+        {
+            Debug.Log("[CookingManager] ⚠️ Game already over");
+            return;
+        }
         
-        Debug.Log($"[CookingManager] Taste in range: {tasteInRange} ({tasteMeter.CurrentValue:F1} in {currentRecipe.tasteMin}-{currentRecipe.tasteMax})");
-        Debug.Log($"[CookingManager] Stability in range: {stabilityInRange} ({stabilityMeter.CurrentValue:F1} in {currentRecipe.stabilityMin}-{currentRecipe.stabilityMax})");
-        Debug.Log($"[CookingManager] Magic in range: {magicInRange} ({magicMeter.CurrentValue:F1} in {currentRecipe.magicMin}-{currentRecipe.magicMax})");
-        
-        bool victory = tasteInRange && stabilityInRange && magicInRange;
-        EndGame(victory);
+        Debug.Log("[CookingManager] 🍽️ SERVE EARLY requested!");
+        CompleteOrder();
     }
     
-    void EndGame(bool victory)
+    void CompleteOrder()
+    {
+        Debug.Log("[CookingManager] Completing order...");
+        
+        if (rewardCalculator != null)
+        {
+            RewardResult result = rewardCalculator.CalculateReward(
+                currentRecipe,
+                tasteMeter.CurrentValue,
+                stabilityMeter.CurrentValue,
+                magicMeter.CurrentValue,
+                turnsRemaining,
+                currentRecipe.totalTurns
+            );
+            
+            EndGame(result);
+        }
+        else
+        {
+            bool victory = tasteMeter.CurrentValue >= currentRecipe.tasteMin && 
+                          tasteMeter.CurrentValue <= currentRecipe.tasteMax &&
+                          stabilityMeter.CurrentValue >= currentRecipe.stabilityMin && 
+                          stabilityMeter.CurrentValue <= currentRecipe.stabilityMax &&
+                          magicMeter.CurrentValue >= currentRecipe.magicMin && 
+                          magicMeter.CurrentValue <= currentRecipe.magicMax;
+            
+            EndGame(victory ? new RewardResult { finalReward = currentRecipe.baseReward, grade = "PERFECT" } : null);
+        }
+    }
+    
+    void EndGame(RewardResult result)
     {
         isGameOver = true;
         waitingForSelection = false;
+        canServeEarly = false;
         
         if (fireBoostController != null)
         {
             fireBoostController.DisableBoost();
         }
         
-        if (victory)
+        if (result != null && result.finalReward > 0)
         {
-            Debug.Log("[CookingManager] 🎉🎉🎉 VICTORY! 🎉🎉🎉");
+            Debug.Log($"[CookingManager] 🎉 ORDER COMPLETE! Grade: {result.grade}, Reward: {result.finalReward}");
+            
+            if (CurrencyManager.Instance != null)
+            {
+                CurrencyManager.Instance.AddCoins(result.finalReward);
+            }
         }
         else
         {
-            Debug.Log("[CookingManager] 💀💀💀 GAME OVER 💀💀💀");
+            Debug.Log("[CookingManager] 💀 ORDER FAILED!");
         }
         
-        GameManager.Instance.uiManager.ShowResultPanel(victory);
+        GameManager.Instance.uiManager.ShowResultPanel(result);
+    }
+    
+    public int GetCurrentPotentialReward()
+    {
+        if (rewardCalculator == null || currentRecipe == null) return 0;
+        
+        return rewardCalculator.GetCurrentPotentialReward(
+            currentRecipe,
+            tasteMeter.CurrentValue,
+            stabilityMeter.CurrentValue,
+            magicMeter.CurrentValue,
+            turnsRemaining
+        );
     }
     
     void OnDestroy()
@@ -329,6 +568,18 @@ public class CookingManager : MonoBehaviour
         {
             fireBoostController.OnBoostTick -= OnFireBoostTick;
             fireBoostController.OnBoostEnded -= OnFireBoostEnded;
+        }
+        
+        if (jackpotController != null)
+        {
+            jackpotController.OnEffectSelected -= OnJackpotEffectSelected;
+            jackpotController.OnJackpotTriggered -= OnJackpotTriggered;
+        }
+        
+        if (shieldController != null)
+        {
+            shieldController.OnShieldActivated -= OnShieldActivated;
+            shieldController.OnShieldUsed -= OnShieldUsed;
         }
     }
 }
