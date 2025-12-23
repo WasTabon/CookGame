@@ -13,6 +13,7 @@ MonoBehaviour:
   m_Name: Medium Soup
   m_EditorClassIdentifier: 
   recipeName: Medium Soup
+  unlockLevel: 3
   tasteMin: 30
   tasteMax: 40
   stabilityMin: 60
@@ -21,3 +22,6 @@ MonoBehaviour:
   magicMax: 30
   totalTurns: 4
   difficulty: 1
+  baseReward: 100
+  icon: {fileID: 0}
+  description: 

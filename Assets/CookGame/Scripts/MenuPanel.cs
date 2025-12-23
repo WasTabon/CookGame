@@ -7,10 +7,22 @@ public class MenuPanel : MonoBehaviour
 {
     [Header("UI References")]
     public Button getOrderButton;
+    public Button statsButton;
+    public Button settingsButton;
     
     [Header("Currency Display")]
     public TMP_Text coinsText;
     public TMP_Text gemsText;
+    
+    [Header("Level Display")]
+    public TMP_Text levelText;
+    public Slider xpSlider;
+    public TMP_Text xpText;
+    public TMP_Text streakText;
+    
+    [Header("Panels")]
+    public PlayerStatsPanel statsPanel;
+    public SettingsPanel settingsPanel;
     
     void Awake()
     {
@@ -23,6 +35,7 @@ public class MenuPanel : MonoBehaviour
         ValidateReferences();
         SetupButtons();
         SetupCurrencyDisplay();
+        SetupProgressDisplay();
     }
     
     void ValidateReferences()
@@ -39,6 +52,18 @@ public class MenuPanel : MonoBehaviour
         {
             getOrderButton.onClick.AddListener(OnGetOrderClicked);
             Debug.Log("[MenuPanel] ✅ Get Order button listener added");
+        }
+        
+        if (statsButton != null)
+        {
+            statsButton.onClick.AddListener(OnStatsClicked);
+            Debug.Log("[MenuPanel] ✅ Stats button listener added");
+        }
+        
+        if (settingsButton != null)
+        {
+            settingsButton.onClick.AddListener(OnSettingsClicked);
+            Debug.Log("[MenuPanel] ✅ Settings button listener added");
         }
     }
     
@@ -60,6 +85,25 @@ public class MenuPanel : MonoBehaviour
         }
     }
     
+    void SetupProgressDisplay()
+    {
+        if (PlayerProgressManager.Instance != null)
+        {
+            PlayerProgressManager.Instance.OnXPChanged += UpdateXPDisplay;
+            PlayerProgressManager.Instance.OnLevelUp += OnLevelUp;
+            PlayerProgressManager.Instance.OnStreakChanged += UpdateStreakDisplay;
+            
+            UpdateLevelDisplay();
+            UpdateStreakDisplay(PlayerProgressManager.Instance.Data.currentStreak);
+            
+            Debug.Log("[MenuPanel] ✅ Progress display setup complete");
+        }
+        else
+        {
+            Debug.LogWarning("[MenuPanel] ⚠️ PlayerProgressManager.Instance is NULL");
+        }
+    }
+    
     void UpdateCoinsDisplay(int amount)
     {
         if (coinsText != null)
@@ -78,6 +122,77 @@ public class MenuPanel : MonoBehaviour
         }
     }
     
+    void UpdateLevelDisplay()
+    {
+        if (PlayerProgressManager.Instance == null) return;
+        
+        var data = PlayerProgressManager.Instance.Data;
+        var manager = PlayerProgressManager.Instance;
+        
+        if (levelText != null)
+        {
+            levelText.text = $"Lv.{data.level}";
+        }
+        
+        if (xpSlider != null)
+        {
+            xpSlider.value = manager.GetLevelProgress();
+        }
+        
+        if (xpText != null)
+        {
+            xpText.text = $"{data.currentXP}/{manager.GetXPForNextLevel()}";
+        }
+    }
+    
+    void UpdateXPDisplay(int currentXP, int xpNeeded)
+    {
+        if (xpSlider != null)
+        {
+            float progress = xpNeeded > 0 ? (float)currentXP / xpNeeded : 0f;
+            xpSlider.DOValue(progress, 0.5f).SetEase(Ease.OutQuad);
+        }
+        
+        if (xpText != null)
+        {
+            xpText.text = $"{currentXP}/{xpNeeded}";
+            xpText.transform.DOPunchScale(Vector3.one * 0.1f, 0.2f, 5);
+        }
+    }
+    
+    void OnLevelUp(int newLevel)
+    {
+        if (levelText != null)
+        {
+            levelText.text = $"Lv.{newLevel}";
+            levelText.transform.DOPunchScale(Vector3.one * 0.3f, 0.5f, 5);
+        }
+        
+        if (xpSlider != null)
+        {
+            xpSlider.value = 0f;
+        }
+        
+        UpdateLevelDisplay();
+    }
+    
+    void UpdateStreakDisplay(int streak)
+    {
+        if (streakText != null)
+        {
+            if (streak > 0)
+            {
+                streakText.text = $"🔥 {streak}";
+                streakText.gameObject.SetActive(true);
+                streakText.transform.DOPunchScale(Vector3.one * 0.2f, 0.3f, 5);
+            }
+            else
+            {
+                streakText.gameObject.SetActive(false);
+            }
+        }
+    }
+    
     string FormatNumber(int number)
     {
         if (number >= 1000000)
@@ -90,6 +205,11 @@ public class MenuPanel : MonoBehaviour
     void OnGetOrderClicked()
     {
         Debug.Log("[MenuPanel] Get Order button clicked!");
+        
+        if (AudioManager.Instance != null)
+        {
+            AudioManager.Instance.PlayButtonClick();
+        }
         
         getOrderButton.transform.DOPunchScale(Vector3.one * 0.1f, 0.2f, 5);
         
@@ -107,6 +227,36 @@ public class MenuPanel : MonoBehaviour
         }
     }
     
+    void OnStatsClicked()
+    {
+        Debug.Log("[MenuPanel] Stats button clicked!");
+        
+        if (AudioManager.Instance != null)
+        {
+            AudioManager.Instance.PlayButtonClick();
+        }
+        
+        if (statsPanel != null)
+        {
+            statsPanel.Show();
+        }
+    }
+    
+    void OnSettingsClicked()
+    {
+        Debug.Log("[MenuPanel] Settings button clicked!");
+        
+        if (AudioManager.Instance != null)
+        {
+            AudioManager.Instance.PlayButtonClick();
+        }
+        
+        if (settingsPanel != null)
+        {
+            settingsPanel.Show();
+        }
+    }
+    
     public void Show()
     {
         Debug.Log("[MenuPanel] Show()");
@@ -117,6 +267,18 @@ public class MenuPanel : MonoBehaviour
         {
             UpdateCoinsDisplay(CurrencyManager.Instance.Coins);
             UpdateGemsDisplay(CurrencyManager.Instance.Gems);
+        }
+        
+        UpdateLevelDisplay();
+        
+        if (PlayerProgressManager.Instance != null)
+        {
+            UpdateStreakDisplay(PlayerProgressManager.Instance.Data.currentStreak);
+        }
+        
+        if (AudioManager.Instance != null)
+        {
+            AudioManager.Instance.PlayPanelOpen();
         }
         
         CanvasGroup canvasGroup = GetComponent<CanvasGroup>();
@@ -159,6 +321,13 @@ public class MenuPanel : MonoBehaviour
         {
             CurrencyManager.Instance.OnCoinsChanged -= UpdateCoinsDisplay;
             CurrencyManager.Instance.OnGemsChanged -= UpdateGemsDisplay;
+        }
+        
+        if (PlayerProgressManager.Instance != null)
+        {
+            PlayerProgressManager.Instance.OnXPChanged -= UpdateXPDisplay;
+            PlayerProgressManager.Instance.OnLevelUp -= OnLevelUp;
+            PlayerProgressManager.Instance.OnStreakChanged -= UpdateStreakDisplay;
         }
     }
 }

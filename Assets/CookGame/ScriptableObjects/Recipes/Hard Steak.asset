@@ -13,6 +13,7 @@ MonoBehaviour:
   m_Name: Hard Steak
   m_EditorClassIdentifier: 
   recipeName: Hard Steak
+  unlockLevel: 2
   tasteMin: 80
   tasteMax: 90
   stabilityMin: 85
@@ -23,3 +24,4 @@ MonoBehaviour:
   difficulty: 2
   baseReward: 200
   icon: {fileID: 0}
+  description: 

@@ -5,6 +5,9 @@ public class RecipeData : ScriptableObject
 {
     public string recipeName;
     
+    [Header("Unlock Settings")]
+    public int unlockLevel = 1;
+    
     [Header("Taste Target")]
     public float tasteMin;
     public float tasteMax;
@@ -28,10 +31,13 @@ public class RecipeData : ScriptableObject
     
     [Header("Visual")]
     public Sprite icon;
+    [TextArea(2, 4)]
+    public string description;
     
     void OnEnable()
     {
         Debug.Log($"[RecipeData] Recipe loaded: {recipeName}");
+        Debug.Log($"[RecipeData]   Unlock Level: {unlockLevel}");
         Debug.Log($"[RecipeData]   Taste: {tasteMin}-{tasteMax}");
         Debug.Log($"[RecipeData]   Stability: {stabilityMin}-{stabilityMax}");
         Debug.Log($"[RecipeData]   Magic: {magicMin}-{magicMax}");
@@ -63,6 +69,18 @@ public class RecipeData : ScriptableObject
             Difficulty.Hard => 200,
             Difficulty.Elite => 500,
             _ => 100
+        };
+    }
+    
+    public int GetXPReward()
+    {
+        return difficulty switch
+        {
+            Difficulty.Easy => 10,
+            Difficulty.Medium => 20,
+            Difficulty.Hard => 35,
+            Difficulty.Elite => 50,
+            _ => 10
         };
     }
 }

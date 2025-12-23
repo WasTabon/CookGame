@@ -146,6 +146,11 @@ public class CookingManager : MonoBehaviour
         waitingForJackpotSelection = true;
         waitingForSelection = false;
         
+        if (PlayerProgressManager.Instance != null)
+        {
+            PlayerProgressManager.Instance.RecordJackpot();
+        }
+        
         if (VFXController.Instance != null)
         {
             VFXController.Instance.FlashJackpot();
@@ -623,6 +628,11 @@ public class CookingManager : MonoBehaviour
             {
                 CurrencyManager.Instance.AddCoins(result.finalReward);
             }
+            
+            if (PlayerProgressManager.Instance != null)
+            {
+                PlayerProgressManager.Instance.RecordOrderComplete(result.grade, result.finalReward);
+            }
         }
         else
         {
@@ -636,6 +646,11 @@ public class CookingManager : MonoBehaviour
             if (AudioManager.Instance != null)
             {
                 AudioManager.Instance.PlayDefeat();
+            }
+            
+            if (PlayerProgressManager.Instance != null)
+            {
+                PlayerProgressManager.Instance.RecordOrderFailed();
             }
         }
         
