@@ -122,12 +122,22 @@ public class CookingManager : MonoBehaviour
         stabilityMeter.AddValue(stabilityBoost);
         magicMeter.AddValue(magicBoost);
         
+        if (AudioManager.Instance != null)
+        {
+            AudioManager.Instance.PlayFireBoostTick();
+        }
+        
         CheckForOverflow();
     }
     
     void OnFireBoostEnded()
     {
         Debug.Log("[CookingManager] 🔥 Fire Boost ended notification received");
+        
+        if (AudioManager.Instance != null)
+        {
+            AudioManager.Instance.PlayFireBoostEnd();
+        }
     }
     
     void OnJackpotTriggered()
@@ -139,6 +149,11 @@ public class CookingManager : MonoBehaviour
         if (VFXController.Instance != null)
         {
             VFXController.Instance.FlashJackpot();
+        }
+        
+        if (AudioManager.Instance != null)
+        {
+            AudioManager.Instance.PlayJackpot();
         }
     }
     
@@ -234,6 +249,11 @@ public class CookingManager : MonoBehaviour
         Debug.Log($"[CookingManager] 🛡️ Shield activated on: {meter}");
         waitingForShieldSelection = false;
         waitingForSelection = true;
+        
+        if (AudioManager.Instance != null)
+        {
+            AudioManager.Instance.PlayShieldActivate();
+        }
     }
     
     void OnShieldUsed(MeterType meter)
@@ -244,6 +264,11 @@ public class CookingManager : MonoBehaviour
         {
             VFXController.Instance.FlashSuccess();
             VFXController.Instance.ShakeMedium();
+        }
+        
+        if (AudioManager.Instance != null)
+        {
+            AudioManager.Instance.PlayShieldBlock();
         }
     }
     
@@ -328,6 +353,11 @@ public class CookingManager : MonoBehaviour
             isJackpot = jackpotController.CheckForJackpot(currentIngredients);
         }
         
+        if (AudioManager.Instance != null)
+        {
+            AudioManager.Instance.PlayIngredientRoll();
+        }
+        
         DisplayIngredients();
         
         if (!isJackpot)
@@ -387,6 +417,11 @@ public class CookingManager : MonoBehaviour
         if (VFXController.Instance != null)
         {
             VFXController.Instance.PlayIngredientSelect();
+        }
+        
+        if (AudioManager.Instance != null)
+        {
+            AudioManager.Instance.PlayIngredientSelect();
         }
         
         float multiplier = 1f;
@@ -497,6 +532,11 @@ public class CookingManager : MonoBehaviour
                 VFXController.Instance.FlashOverflow();
             }
             
+            if (AudioManager.Instance != null)
+            {
+                AudioManager.Instance.PlayMeterOverflow();
+            }
+            
             EndGame(null);
             return true;
         }
@@ -574,6 +614,11 @@ public class CookingManager : MonoBehaviour
                 VFXController.Instance.FlashVictory();
             }
             
+            if (AudioManager.Instance != null)
+            {
+                AudioManager.Instance.PlayVictory();
+            }
+            
             if (CurrencyManager.Instance != null)
             {
                 CurrencyManager.Instance.AddCoins(result.finalReward);
@@ -586,6 +631,11 @@ public class CookingManager : MonoBehaviour
             if (VFXController.Instance != null)
             {
                 VFXController.Instance.FlashDefeat();
+            }
+            
+            if (AudioManager.Instance != null)
+            {
+                AudioManager.Instance.PlayDefeat();
             }
         }
         

@@ -98,6 +98,11 @@ public class FireBoostController : MonoBehaviour
             return;
         }
         
+        if (AudioManager.Instance != null)
+        {
+            AudioManager.Instance.PlayButtonClick();
+        }
+        
         ShowDurationPanel();
     }
     
@@ -110,6 +115,11 @@ public class FireBoostController : MonoBehaviour
             durationPanel.SetActive(true);
             durationPanel.transform.localScale = Vector3.zero;
             durationPanel.transform.DOScale(1f, 0.3f).SetEase(Ease.OutBack);
+            
+            if (AudioManager.Instance != null)
+            {
+                AudioManager.Instance.PlayPanelOpen();
+            }
         }
     }
     
@@ -127,6 +137,11 @@ public class FireBoostController : MonoBehaviour
     void SelectDuration(int index)
     {
         Debug.Log($"[FireBoostController] Duration selected: {durationOptions[index]}s");
+        
+        if (AudioManager.Instance != null)
+        {
+            AudioManager.Instance.PlayButtonClick();
+        }
         
         currentDuration = durationOptions[index];
         HideDurationPanel();
@@ -153,6 +168,11 @@ public class FireBoostController : MonoBehaviour
         if (fireBoostButton != null)
         {
             fireBoostButton.interactable = false;
+        }
+        
+        if (AudioManager.Instance != null)
+        {
+            AudioManager.Instance.PlayFireBoostStart();
         }
     }
     

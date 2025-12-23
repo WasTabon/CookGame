@@ -36,6 +36,7 @@ public class ResultPanel : MonoBehaviour
     public float counterDuration = 1.5f;
     
     private RewardResult currentResult;
+    private Tween counterTween;
     
     void Awake()
     {
@@ -179,18 +180,21 @@ public class ResultPanel : MonoBehaviour
         
         Debug.Log($"[ResultPanel] 🔢 Animating reward counter to {targetValue}");
         
-        if (VFXController.Instance != null)
-        {
-            VFXController.Instance.AnimateCounter(finalRewardText, 0, targetValue, counterDuration, "{0} Coins");
-        }
-        else
-        {
-            int currentValue = 0;
-            DOTween.To(() => currentValue, x => {
-                currentValue = x;
-                finalRewardText.text = $"{currentValue} Coins";
-            }, targetValue, counterDuration).SetEase(Ease.OutQuad);
-        }
+        counterTween?.Kill();
+        
+        int currentValue = 0;
+        int lastSoundValue = 0;
+        
+        counterTween = DOTween.To(() => currentValue, x => {
+            currentValue = x;
+            finalRewardText.text = $"{currentValue} Coins";
+            
+            if (AudioManager.Instance != null && currentValue - lastSoundValue >= 10)
+            {
+                AudioManager.Instance.PlayCoinCounter();
+                lastSoundValue = currentValue;
+            }
+        }, targetValue, counterDuration).SetEase(Ease.OutQuad);
         
         DOVirtual.DelayedCall(counterDuration, () => {
             if (finalRewardText != null)
@@ -200,6 +204,11 @@ public class ResultPanel : MonoBehaviour
                 if (VFXController.Instance != null)
                 {
                     VFXController.Instance.FlashSuccess();
+                }
+                
+                if (AudioManager.Instance != null)
+                {
+                    AudioManager.Instance.PlayCoinCollect();
                 }
             }
         });
@@ -242,6 +251,11 @@ public class ResultPanel : MonoBehaviour
     {
         Debug.Log("[ResultPanel] Continue button clicked!");
         
+        if (AudioManager.Instance != null)
+        {
+            AudioManager.Instance.PlayButtonClick();
+        }
+        
         continueButton.transform.DOPunchScale(Vector3.one * 0.1f, 0.2f, 5);
         
         DOVirtual.DelayedCall(0.3f, () => {
@@ -255,6 +269,11 @@ public class ResultPanel : MonoBehaviour
         Debug.Log("[ResultPanel] Show()");
         
         gameObject.SetActive(true);
+        
+        if (AudioManager.Instance != null)
+        {
+            AudioManager.Instance.PlayPanelOpen();
+        }
         
         CanvasGroup canvasGroup = GetComponent<CanvasGroup>();
         if (canvasGroup == null)
@@ -336,6 +355,13 @@ public class ResultPanel : MonoBehaviour
     {
         Debug.Log("[ResultPanel] Hide()");
         
+        counterTween?.Kill();
+        
+        if (AudioManager.Instance != null)
+        {
+            AudioManager.Instance.PlayPanelClose();
+        }
+        
         CanvasGroup canvasGroup = GetComponent<CanvasGroup>();
         if (canvasGroup == null)
         {
@@ -348,5 +374,10 @@ public class ResultPanel : MonoBehaviour
         hideSequence.OnComplete(() => gameObject.SetActive(false));
         
         Debug.Log("[ResultPanel] ✅ Hide animation started");
+    }
+    
+    void OnDestroy()
+    {
+        counterTween?.Kill();
     }
 }

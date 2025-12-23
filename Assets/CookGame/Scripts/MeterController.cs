@@ -97,6 +97,11 @@ public class MeterController : MonoBehaviour
         
         float newValue = Mathf.Clamp(CurrentValue + amount, 0f, maxValue);
         SetValue(newValue);
+        
+        if (AudioManager.Instance != null && amount > 0.5f)
+        {
+            AudioManager.Instance.PlayMeterIncrease();
+        }
     }
     
     public void SetValue(float newValue)
@@ -139,6 +144,11 @@ public class MeterController : MonoBehaviour
             if (VFXController.Instance != null)
             {
                 VFXController.Instance.PlayMeterInTarget();
+            }
+            
+            if (AudioManager.Instance != null)
+            {
+                AudioManager.Instance.PlayMeterInTarget();
             }
             
             if (valueText != null)
