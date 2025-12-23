@@ -33,6 +33,7 @@ public class CookingManager : MonoBehaviour
     private bool waitingForSelection = false;
     private bool waitingForJackpotSelection = false;
     private bool waitingForShieldSelection = false;
+    private bool hasBoosterShield = false;
     
     void Awake()
     {
@@ -122,22 +123,12 @@ public class CookingManager : MonoBehaviour
         stabilityMeter.AddValue(stabilityBoost);
         magicMeter.AddValue(magicBoost);
         
-        if (AudioManager.Instance != null)
-        {
-            AudioManager.Instance.PlayFireBoostTick();
-        }
-        
         CheckForOverflow();
     }
     
     void OnFireBoostEnded()
     {
         Debug.Log("[CookingManager] 🔥 Fire Boost ended notification received");
-        
-        if (AudioManager.Instance != null)
-        {
-            AudioManager.Instance.PlayFireBoostEnd();
-        }
     }
     
     void OnJackpotTriggered()
@@ -295,6 +286,9 @@ public class CookingManager : MonoBehaviour
         canServeEarly = false;
         waitingForJackpotSelection = false;
         waitingForShieldSelection = false;
+        hasBoosterShield = false;
+        
+        ApplyStartingBoosters();
         
         InitializeMeters();
         
@@ -314,6 +308,35 @@ public class CookingManager : MonoBehaviour
         }
         
         DOVirtual.DelayedCall(0.5f, () => RollNewIngredients());
+    }
+    
+    void ApplyStartingBoosters()
+    {
+        if (BoosterManager.Instance == null) return;
+        
+        var active = BoosterManager.Instance.ActiveBoosters;
+        
+        if (active.extraTurnsThisGame > 0)
+        {
+            turnsRemaining += active.extraTurnsThisGame;
+            Debug.Log($"[CookingManager] ⚡ Extra Turn booster: +{active.extraTurnsThisGame} turns");
+        }
+        
+        if (active.shieldActive)
+        {
+            hasBoosterShield = true;
+            Debug.Log("[CookingManager] ⚡ Shield booster active");
+        }
+        
+        if (active.doubleCoinsActive)
+        {
+            Debug.Log("[CookingManager] ⚡ Double Coins booster active");
+        }
+        
+        if (active.doubleXPActive)
+        {
+            Debug.Log("[CookingManager] ⚡ Double XP booster active");
+        }
     }
     
     void InitializeMeters()
@@ -506,7 +529,7 @@ public class CookingManager : MonoBehaviour
         
         if (tasteOverflow || stabilityOverflow || magicOverflow)
         {
-            Debug.Log("[CookingManager] ⚠️ OVERFLOW DETECTED - Checking shield...");
+            Debug.Log("[CookingManager] ⚠️ OVERFLOW DETECTED - Checking shields...");
             
             if (shieldController != null && shieldController.HasActiveShield)
             {
@@ -525,6 +548,28 @@ public class CookingManager : MonoBehaviour
                     magicMeter.SetValue(currentRecipe.magicMax);
                     return false;
                 }
+            }
+            
+            if (hasBoosterShield)
+            {
+                Debug.Log("[CookingManager] ⚡ BOOSTER SHIELD used!");
+                hasBoosterShield = false;
+                
+                if (tasteOverflow) tasteMeter.SetValue(currentRecipe.tasteMax);
+                if (stabilityOverflow) stabilityMeter.SetValue(currentRecipe.stabilityMax);
+                if (magicOverflow) magicMeter.SetValue(currentRecipe.magicMax);
+                
+                if (VFXController.Instance != null)
+                {
+                    VFXController.Instance.FlashSuccess();
+                }
+                
+                if (AudioManager.Instance != null)
+                {
+                    AudioManager.Instance.PlayShieldBlock();
+                }
+                
+                return false;
             }
             
             Debug.Log("[CookingManager] ❌ OVERFLOW - No shield protection!");
@@ -582,6 +627,8 @@ public class CookingManager : MonoBehaviour
                 currentRecipe.totalTurns
             );
             
+            ApplyBoosterMultipliers(result);
+            
             EndGame(result);
         }
         else
@@ -594,6 +641,19 @@ public class CookingManager : MonoBehaviour
                           magicMeter.CurrentValue <= currentRecipe.magicMax;
             
             EndGame(victory ? new RewardResult { finalReward = currentRecipe.baseReward, grade = "PERFECT" } : null);
+        }
+    }
+    
+    void ApplyBoosterMultipliers(RewardResult result)
+    {
+        if (BoosterManager.Instance == null) return;
+        
+        float coinMultiplier = BoosterManager.Instance.GetCoinMultiplier();
+        if (coinMultiplier > 1f)
+        {
+            int originalReward = result.finalReward;
+            result.finalReward = Mathf.RoundToInt(result.finalReward * coinMultiplier);
+            Debug.Log($"[CookingManager] ⚡ Double Coins: {originalReward} × {coinMultiplier} = {result.finalReward}");
         }
     }
     
@@ -631,6 +691,17 @@ public class CookingManager : MonoBehaviour
             
             if (PlayerProgressManager.Instance != null)
             {
+                float xpMultiplier = 1f;
+                if (BoosterManager.Instance != null)
+                {
+                    xpMultiplier = BoosterManager.Instance.GetXPMultiplier();
+                }
+                
+                if (xpMultiplier > 1f)
+                {
+                    Debug.Log($"[CookingManager] ⚡ Double XP booster active: x{xpMultiplier}");
+                }
+                
                 PlayerProgressManager.Instance.RecordOrderComplete(result.grade, result.finalReward);
             }
         }
@@ -661,13 +732,20 @@ public class CookingManager : MonoBehaviour
     {
         if (rewardCalculator == null || currentRecipe == null) return 0;
         
-        return rewardCalculator.GetCurrentPotentialReward(
+        int baseReward = rewardCalculator.GetCurrentPotentialReward(
             currentRecipe,
             tasteMeter.CurrentValue,
             stabilityMeter.CurrentValue,
             magicMeter.CurrentValue,
             turnsRemaining
         );
+        
+        if (BoosterManager.Instance != null)
+        {
+            baseReward = Mathf.RoundToInt(baseReward * BoosterManager.Instance.GetCoinMultiplier());
+        }
+        
+        return baseReward;
     }
     
     void OnDestroy()

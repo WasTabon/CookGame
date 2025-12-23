@@ -12,6 +12,9 @@ public class FireBoostController : MonoBehaviour
     [Header("Duration Options")]
     public float[] durationOptions = { 2f, 3f, 5f };
     
+    [Header("Gem Prices")]
+    public int[] gemPrices = { 1, 2, 3 };
+    
     [Header("UI References")]
     public Button fireBoostButton;
     public GameObject durationPanel;
@@ -72,13 +75,44 @@ public class FireBoostController : MonoBehaviour
             {
                 durationButtons[i].onClick.AddListener(() => SelectDuration(index));
                 
-                if (durationButtonTexts != null && i < durationButtonTexts.Length && durationButtonTexts[i] != null)
-                {
-                    durationButtonTexts[i].text = $"{durationOptions[index]}s";
-                }
+                UpdateDurationButtonText(i);
                 
-                Debug.Log($"[FireBoostController] ✅ Duration button {i} set to {durationOptions[index]}s");
+                Debug.Log($"[FireBoostController] ✅ Duration button {i} set to {durationOptions[index]}s for {gemPrices[index]} 💎");
             }
+        }
+    }
+    
+    void UpdateDurationButtonText(int index)
+    {
+        if (durationButtonTexts != null && index < durationButtonTexts.Length && durationButtonTexts[index] != null)
+        {
+            int price = index < gemPrices.Length ? gemPrices[index] : 1;
+            durationButtonTexts[index].text = $"{durationOptions[index]}s\n{price} 💎";
+        }
+    }
+    
+    void UpdateAllDurationButtons()
+    {
+        for (int i = 0; i < durationButtons.Length && i < durationOptions.Length; i++)
+        {
+            UpdateDurationButtonText(i);
+            UpdateDurationButtonAvailability(i);
+        }
+    }
+    
+    void UpdateDurationButtonAvailability(int index)
+    {
+        if (durationButtons[index] == null) return;
+        
+        int price = index < gemPrices.Length ? gemPrices[index] : 1;
+        bool canAfford = CurrencyManager.Instance != null && CurrencyManager.Instance.Gems >= price;
+        
+        durationButtons[index].interactable = canAfford;
+        
+        Image buttonImage = durationButtons[index].GetComponent<Image>();
+        if (buttonImage != null)
+        {
+            buttonImage.color = canAfford ? new Color(1f, 0.5f, 0f, 1f) : new Color(0.4f, 0.4f, 0.4f, 1f);
         }
     }
     
@@ -110,16 +144,13 @@ public class FireBoostController : MonoBehaviour
     {
         Debug.Log("[FireBoostController] Showing duration panel");
         
+        UpdateAllDurationButtons();
+        
         if (durationPanel != null)
         {
             durationPanel.SetActive(true);
             durationPanel.transform.localScale = Vector3.zero;
             durationPanel.transform.DOScale(1f, 0.3f).SetEase(Ease.OutBack);
-            
-            if (AudioManager.Instance != null)
-            {
-                AudioManager.Instance.PlayPanelOpen();
-            }
         }
     }
     
@@ -136,12 +167,31 @@ public class FireBoostController : MonoBehaviour
     
     void SelectDuration(int index)
     {
-        Debug.Log($"[FireBoostController] Duration selected: {durationOptions[index]}s");
+        int gemPrice = index < gemPrices.Length ? gemPrices[index] : 1;
         
-        if (AudioManager.Instance != null)
+        Debug.Log($"[FireBoostController] Duration selected: {durationOptions[index]}s for {gemPrice} 💎");
+        
+        if (CurrencyManager.Instance == null)
         {
-            AudioManager.Instance.PlayButtonClick();
+            Debug.LogError("[FireBoostController] ❌ CurrencyManager not found!");
+            HideDurationPanel();
+            return;
         }
+        
+        if (!CurrencyManager.Instance.SpendGems(gemPrice))
+        {
+            Debug.Log($"[FireBoostController] ❌ Not enough gems! Need {gemPrice}, have {CurrencyManager.Instance.Gems}");
+            
+            if (VFXController.Instance != null)
+            {
+                VFXController.Instance.FlashOverflow();
+            }
+            
+            HapticController.Error();
+            return;
+        }
+        
+        Debug.Log($"[FireBoostController] ✅ Spent {gemPrice} 💎");
         
         currentDuration = durationOptions[index];
         HideDurationPanel();
@@ -174,6 +224,13 @@ public class FireBoostController : MonoBehaviour
         {
             AudioManager.Instance.PlayFireBoostStart();
         }
+        
+        HapticController.MediumImpact();
+        
+        if (VFXController.Instance != null)
+        {
+            VFXController.Instance.FlashSuccess();
+        }
     }
     
     void Update()
@@ -186,7 +243,6 @@ public class FireBoostController : MonoBehaviour
         UpdateTimerUI();
         
         float boostAmount = boostPerSecond * Time.deltaTime;
-        Debug.Log($"[FireBoostController] 🔥 Boost tick: +{boostAmount:F2} to all meters");
         OnBoostTick?.Invoke(boostAmount, boostAmount, boostAmount);
         
         if (elapsedTime >= currentDuration)
@@ -220,6 +276,11 @@ public class FireBoostController : MonoBehaviour
         if (fireBoostIcon != null)
         {
             fireBoostIcon.DOColor(normalColor, 0.3f);
+        }
+        
+        if (AudioManager.Instance != null)
+        {
+            AudioManager.Instance.PlayFireBoostEnd();
         }
         
         OnBoostEnded?.Invoke();
@@ -300,6 +361,8 @@ public class FireBoostController : MonoBehaviour
         {
             fireBoostButton.interactable = false;
         }
+        
+        HideDurationPanel();
         
         if (IsBoostActive)
         {

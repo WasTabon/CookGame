@@ -9,6 +9,8 @@ public class MenuPanel : MonoBehaviour
     public Button getOrderButton;
     public Button statsButton;
     public Button settingsButton;
+    public Button shopButton;
+    public Button gemShopButton;
     
     [Header("Currency Display")]
     public TMP_Text coinsText;
@@ -23,6 +25,8 @@ public class MenuPanel : MonoBehaviour
     [Header("Panels")]
     public PlayerStatsPanel statsPanel;
     public SettingsPanel settingsPanel;
+    public ShopPanel shopPanel;
+    public GemShopPanel gemShopPanel;
     
     void Awake()
     {
@@ -64,6 +68,18 @@ public class MenuPanel : MonoBehaviour
         {
             settingsButton.onClick.AddListener(OnSettingsClicked);
             Debug.Log("[MenuPanel] ✅ Settings button listener added");
+        }
+        
+        if (shopButton != null)
+        {
+            shopButton.onClick.AddListener(OnShopClicked);
+            Debug.Log("[MenuPanel] ✅ Shop button listener added");
+        }
+        
+        if (gemShopButton != null)
+        {
+            gemShopButton.onClick.AddListener(OnGemShopClicked);
+            Debug.Log("[MenuPanel] ✅ Gem Shop button listener added");
         }
     }
     
@@ -117,7 +133,7 @@ public class MenuPanel : MonoBehaviour
     {
         if (gemsText != null)
         {
-            gemsText.text = FormatNumber(amount);
+            gemsText.text = amount.ToString();
             gemsText.transform.DOPunchScale(Vector3.one * 0.1f, 0.2f, 5);
         }
     }
@@ -254,6 +270,36 @@ public class MenuPanel : MonoBehaviour
         if (settingsPanel != null)
         {
             settingsPanel.Show();
+        }
+    }
+    
+    void OnShopClicked()
+    {
+        Debug.Log("[MenuPanel] Shop button clicked!");
+        
+        if (AudioManager.Instance != null)
+        {
+            AudioManager.Instance.PlayButtonClick();
+        }
+        
+        if (shopPanel != null)
+        {
+            shopPanel.Show();
+        }
+    }
+    
+    void OnGemShopClicked()
+    {
+        Debug.Log("[MenuPanel] Gem Shop button clicked!");
+        
+        if (AudioManager.Instance != null)
+        {
+            AudioManager.Instance.PlayButtonClick();
+        }
+        
+        if (gemShopPanel != null)
+        {
+            gemShopPanel.Show();
         }
     }
     
