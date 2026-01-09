@@ -15051,7 +15051,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9451216389185d84799b2035cbd88137, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  gemPackProductId: com.yourgame.gems50
+  gemPackProductId: com.ckitchen.addcoins
   gemsPerPurchase: 50
 --- !u!1001 &878445435
 PrefabInstance:
