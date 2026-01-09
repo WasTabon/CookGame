@@ -10,16 +10,18 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 3f6820de60aee0c49bd83c96dc50fd47, type: 3}
-  m_Name: Easy Salad
+  m_Name: GardenSalad
   m_EditorClassIdentifier: 
-  recipeName: Easy Salad
-  tasteMin: 20
-  tasteMax: 35
-  stabilityMin: 40
-  stabilityMax: 55
-  magicMin: 10
-  magicMax: 25
-  totalTurns: 3
+  recipeName: Garden Salad
+  unlockLevel: 2
+  tasteMin: 35
+  tasteMax: 65
+  stabilityMin: 35
+  stabilityMax: 65
+  magicMin: 35
+  magicMax: 65
+  totalTurns: 5
   difficulty: 0
-  baseReward: 50
-  icon: {fileID: 0}
+  baseReward: 60
+  icon: {fileID: 21300000, guid: b6b8f754cfc660448916dcc7ab87cd59, type: 3}
+  description: 

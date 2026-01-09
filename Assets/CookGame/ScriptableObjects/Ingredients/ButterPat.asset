@@ -10,14 +10,15 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 320000a65ecd3b94f884b94b8138655b, type: 3}
-  m_Name: Herbs
+  m_Name: ButterPat
   m_EditorClassIdentifier: 
-  ingredientName: Herbs
-  rarity: 1
-  tasteMin: 10
-  tasteMax: 20
-  stabilityMin: 5
-  stabilityMax: 10
-  magicMin: 3
-  magicMax: 8
-  icon: {fileID: 21300000, guid: efde81193670d4447a551d347410bbf4, type: 3}
+  ingredientName: Butter Pat
+  rarity: 0
+  tasteMin: 6
+  tasteMax: 13
+  stabilityMin: 6
+  stabilityMax: 13
+  magicMin: 6
+  magicMax: 13
+  icon: {fileID: 21300000, guid: d381fef9e976546468a4cf87c8574893, type: 3}
+  rarityColor: {r: 0.8, g: 0.8, b: 0.8, a: 1}

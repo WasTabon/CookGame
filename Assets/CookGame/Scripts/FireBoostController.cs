@@ -154,7 +154,7 @@ public class FireBoostController : MonoBehaviour
         }
     }
     
-    void HideDurationPanel()
+    public void HideDurationPanel()
     {
         Debug.Log("[FireBoostController] Hiding duration panel");
         

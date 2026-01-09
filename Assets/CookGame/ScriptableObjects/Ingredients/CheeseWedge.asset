@@ -10,14 +10,15 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 320000a65ecd3b94f884b94b8138655b, type: 3}
-  m_Name: Sugar
+  m_Name: CheeseWedge
   m_EditorClassIdentifier: 
-  ingredientName: Sugar
+  ingredientName: Cheese Wedge
   rarity: 0
-  tasteMin: 8
-  tasteMax: 15
-  stabilityMin: 3
-  stabilityMax: 7
-  magicMin: 2
-  magicMax: 4
-  icon: {fileID: 21300000, guid: 44c7c67157a3de441b5f252419ed8fad, type: 3}
+  tasteMin: 6
+  tasteMax: 14
+  stabilityMin: 6
+  stabilityMax: 14
+  magicMin: 6
+  magicMax: 14
+  icon: {fileID: 21300000, guid: 97bec2af759a4ce4daf8e5c33bea1b6c, type: 3}
+  rarityColor: {r: 0.8, g: 0.8, b: 0.8, a: 1}

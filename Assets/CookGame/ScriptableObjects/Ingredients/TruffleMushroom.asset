@@ -10,14 +10,15 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 320000a65ecd3b94f884b94b8138655b, type: 3}
-  m_Name: DragonEssence
+  m_Name: TruffleMushroom
   m_EditorClassIdentifier: 
-  ingredientName: Dragon Essence
-  rarity: 2
-  tasteMin: 20
-  tasteMax: 30
-  stabilityMin: 15
-  stabilityMax: 25
-  magicMin: 20
-  magicMax: 35
-  icon: {fileID: 21300000, guid: df9f508112b52844d877f92a8a08db64, type: 3}
+  ingredientName: Truffle Mushroom
+  rarity: 1
+  tasteMin: 10
+  tasteMax: 20
+  stabilityMin: 10
+  stabilityMax: 20
+  magicMin: 10
+  magicMax: 20
+  icon: {fileID: 21300000, guid: e4d602cc46fe10f4a9d3e0546b7377af, type: 3}
+  rarityColor: {r: 0.4, g: 0.6, b: 1, a: 1}

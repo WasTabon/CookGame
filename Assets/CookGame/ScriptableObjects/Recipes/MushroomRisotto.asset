@@ -10,18 +10,18 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 3f6820de60aee0c49bd83c96dc50fd47, type: 3}
-  m_Name: Medium Soup
+  m_Name: MushroomRisotto
   m_EditorClassIdentifier: 
-  recipeName: Medium Soup
-  unlockLevel: 3
-  tasteMin: 30
-  tasteMax: 40
-  stabilityMin: 60
-  stabilityMax: 75
-  magicMin: 20
-  magicMax: 30
-  totalTurns: 4
+  recipeName: Mushroom Risotto
+  unlockLevel: 4
+  tasteMin: 55
+  tasteMax: 70
+  stabilityMin: 50
+  stabilityMax: 65
+  magicMin: 45
+  magicMax: 60
+  totalTurns: 6
   difficulty: 1
-  baseReward: 100
-  icon: {fileID: 0}
+  baseReward: 120
+  icon: {fileID: 21300000, guid: 6b8f48595e89fc04c9e4d3c73c247bdc, type: 3}
   description: 

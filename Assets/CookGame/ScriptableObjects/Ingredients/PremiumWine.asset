@@ -10,14 +10,15 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 320000a65ecd3b94f884b94b8138655b, type: 3}
-  m_Name: Salt
+  m_Name: PremiumWine
   m_EditorClassIdentifier: 
-  ingredientName: Salt
-  rarity: 0
-  tasteMin: 5
-  tasteMax: 10
-  stabilityMin: 2
-  stabilityMax: 5
-  magicMin: 1
-  magicMax: 3
-  icon: {fileID: 21300000, guid: 4d628759ab19cce4b917de7234adadc1, type: 3}
+  ingredientName: Premium Wine
+  rarity: 1
+  tasteMin: 11
+  tasteMax: 21
+  stabilityMin: 11
+  stabilityMax: 21
+  magicMin: 11
+  magicMax: 21
+  icon: {fileID: 21300000, guid: f0ce070a11bf749498a2ba7cb7d5b97e, type: 3}
+  rarityColor: {r: 0.4, g: 0.6, b: 1, a: 1}
