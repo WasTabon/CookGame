@@ -1393,7 +1393,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 120255853}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: b1b3418c5e5095c439dcd39e5c7fba1f, type: 3}
   m_Name: 
@@ -3589,8 +3589,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 827, y: -123.39}
-  m_SizeDelta: {x: 530.9532, y: 99.4883}
+  m_AnchoredPosition: {x: 743.03, y: -123.39}
+  m_SizeDelta: {x: 363.02, y: 99.4883}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &270674177
 MonoBehaviour:
@@ -3612,7 +3612,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: New Text
+  m_text: 'Potential: 17 coins'
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 487311ed4737c1a4992588d0e528d804, type: 2}
   m_sharedMaterial: {fileID: -3016018566219250555, guid: 487311ed4737c1a4992588d0e528d804, type: 2}
@@ -7876,7 +7876,7 @@ MonoBehaviour:
   - {fileID: 1379102183}
   - {fileID: 1083667262}
   durationButtonTexts:
-  - {fileID: 1000960930}
+  - {fileID: 0}
   - {fileID: 0}
   - {fileID: 0}
   fireBoostIcon: {fileID: 2065959099}
@@ -31037,10 +31037,10 @@ RectTransform:
   m_Children: []
   m_Father: {fileID: 644661834}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0.82670087, y: 0.3857778}
-  m_AnchorMax: {x: 0.82670087, y: 0.3857778}
-  m_AnchoredPosition: {x: 4.7019043, y: -0.1505127}
-  m_SizeDelta: {x: 415.48, y: 99.489}
+  m_AnchorMin: {x: 0.8005724, y: 0.3857778}
+  m_AnchorMax: {x: 0.8005724, y: 0.3857778}
+  m_AnchoredPosition: {x: 0.11419678, y: -0.1505127}
+  m_SizeDelta: {x: 546.6556, y: 99.489}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1784603787
 MonoBehaviour:
